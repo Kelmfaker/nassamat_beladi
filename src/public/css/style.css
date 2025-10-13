@@ -1,0 +1,355 @@
+
+@font-face {
+    font-family: 'Jozoor';
+    src: url('fonts/AraJozoor-Regular.woff2') format('woff2'),
+         url('fonts/AraJozoor-Regular.woff') format('woff'),
+         url('fonts/AraJozoor-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+* {
+  direction: rtl;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+    font-family: 'Jozoor', Arial, sans-serif;
+}
+
+body {
+  background-color: #f8f6f4;
+  color: aliceblue;
+    font-family: 'Jozoor', Arial, sans-serif;
+  font-size: 16px;
+}
+
+nav {
+    background-image: url(../images/8400991_Mesa\ de\ trabajo\ 1.jpg);
+
+  background-color: #0D8442;
+  color: #D1CB29;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ccc;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo img {
+height: 50px;
+width: 50px;  
+margin: 10px;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px;
+  background-color: #8252214b;
+  padding: 10px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #D1CB29;
+  font-size: 20px;
+  transition: color 0.3s;
+  font-weight: bold;
+      font-family: 'Jozoor', Arial, sans-serif;
+
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.content{
+  color: #825221;
+  background-image: url(../../public/images/Sans\ titre\ -\ 1_Plan\ de\ travail\ 1.jpg);
+  border-radius: 4px;
+  margin: 10px;
+  height: 100%;
+  width: 90%;
+  align-items: center;
+  align-content: center;
+
+}
+
+footer {
+    background-image: url(../images/8400991_Mesa\ de\ trabajo\ 1.jpg);
+  color: #fff;
+  padding: 15px 0;
+  text-align: center;
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.footer-logo img {
+  height: 60px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #D1CB29;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.footer-copy {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.container{
+
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-left: 500px;
+    background-image: url(/frontend/src/img/tourists-go-up-hill-sunrise.jpg);
+    background-color:#ccc;
+    color: #ddd;
+    border-radius: 1%;
+}
+
+.content{
+
+  padding: 50px;
+}
+
+
+/* Full-width input fields */
+  input[type=text], input[type=number], input[type=file], input[type=password], option,   textarea[type=text]{ 
+    border-radius: 1%;
+  width: 90%;
+  padding: 10px;
+  margin: 15px 0 15px 0;
+border-radius: 3px;
+  display: flex;
+  flex-direction: column ;
+  justify-content: center;
+  
+  border: none;
+  background-color:beige;
+
+      font-family: 'Jozoor', Arial, sans-serif;
+      font-weight: 700;
+color:#825221;
+}
+
+input[type=text]:focus, input[type=password]:focus {
+  background-color: #825221;
+  outline: none;
+
+    font-family: 'Jozoor', Arial, sans-serif;
+color:#ccc;
+}
+
+hr {
+  border: 1px solid #f1f1f1;
+  margin-bottom: 20px;
+}
+
+.img{
+
+  height: 50px;
+  width: 30px;
+}
+
+.clearfix{
+    display: flex;
+    flex-direction: row;
+justify-content:space-between;
+margin: 20px;
+}
+
+/* Set a style for all buttons */
+button {
+  background-color:#825221;
+color:#ccc;
+  text-decoration:solid;
+  padding: 10px 10px;
+  margin: 5px 20px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.9;
+  border-radius: 5%;
+  font-weight: 700;
+}
+
+button:hover {
+  opacity:1;
+}
+
+/* Extra styles for the cancel button */
+.cancelbtn {
+  padding: 10px 10px;
+  background-color:rgb(223, 223, 250);
+}
+
+/* Float cancel and signup buttons and add an equal width */
+.cancelbtn, .signupbtn {
+  float: left;
+  width: 30%;
+}
+
+/* Add padding to container elements */
+.container {
+  padding: 10px;
+}
+
+.btn{
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.content {
+  padding: 20px;
+}
+
+.product-form, .product-table {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.product-form label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+.product-form input,
+.product-form textarea,
+.product-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+}
+
+.product-form button {
+  padding: 10px 15px;
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.product-table th,
+.product-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.product-table th {
+  background: #f4f4f4;
+}
+
+
+.table-container {
+  margin: 20px auto;
+  max-width: 95%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Tahoma", sans-serif;
+  font-size: 14px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background: #f4f6f9;
+}
+
+thead th {
+  padding: 12px 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+tbody td {
+  padding: 0px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+tbody tr:hover {
+  background: #f1f7ff;
+}
+
+button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+button[type="submit"] {
+  background: #28a745;
+  color: #fff;
+  margin: 2px 0;
+}
+
+form[action*="delete"] button {
+  background: #dc3545;
+}
+
+form[action*="delete"] button:hover {
+  background: #c82333;
+}
+
+button:hover {
+  opacity: 0.9;
+}

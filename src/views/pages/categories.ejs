@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إدارة الفئات</title>
+
+</head>
+<body>
+
+          <div class="content">
+
+  <h1>إدارة الفئات</h1>
+
+  <!-- إضافة فئة -->
+   <div class="dive">
+       <h3>    إضافة فئة جديدة     </h3>
+
+  <form action="/admin/categories/add" method="POST">
+    <input type="text" name="name" placeholder="اسم الفئة" required>
+    <button type="submit">إضافة</button>
+
+
+  </form>
+
+
+</div>
+          </div>
+             <div class="table-container">
+  <h3>قائمة الأصناف</h3>
+
+  <% if (categories && categories.length > 0) { %>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الاسم</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% categories.forEach((cat, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td>
+              <form action="/admin/categories/edit/<%= cat._id %>" method="POST" class="flex gap-2">
+                <input type="text" name="name" value="<%= cat.name %>" required>
+                <button type="submit">تعديل</button>
+              </form>
+            </td>
+            <td>
+              <form action="/admin/categories/delete/<%= cat._id %>" method="GET" onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                <button type="submit">حذف</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <h3>لا توجد أصناف</h3>
+  <% } %>
+</div>
+
+
+</body>
+</html>

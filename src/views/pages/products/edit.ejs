@@ -1,0 +1,45 @@
+<div class="content">
+  <h2>تعديل المنتج</h2>
+
+  <form action="/pages/products/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" class="product-form">
+
+    <label>اسم المنتج</label>
+    <input type="text" name="name" value="<%= product.name %>" required>
+
+    <label>الوصف</label>
+    <textarea name="description"><%= product.description %></textarea>
+
+    <label>السعر</label>
+    <input type="number" name="price" value="<%= product.price %>" required>
+
+    <label>السعر بعد التخفيض</label>
+    <input type="number" name="promoPrice" value="<%= product.promoPrice %>">
+
+    <label>الصورة الحالية</label><br>
+    <% if (product.image) { %>
+      <img src="/images/<%= product.image %>" width="120" alt="<%= product.name %>">
+    <% } else { %>
+      <span>لا توجد صورة</span>
+    <% } %>
+    <br><br>
+
+    <label>تغيير الصورة</label>
+    <input type="file" name="image">
+
+    <label>التصنيف</label>
+    <select name="category" required>
+      <% categories.forEach(category => { %>
+        <option value="<%= category._id %>" <%= product.category && product.category._id.toString() === category._id.toString() ? 'selected' : '' %>>
+          <%= category.name %>
+        </option>
+      <% }) %>
+    </select>
+
+    <label>
+      <input type="checkbox" name="inStock" <%= product.inStock ? "checked" : "" %>> متوفر في المخزن
+    </label>
+
+    <button type="submit">حفظ التعديلات</button>
+    <a href="/pages/products" class="btn-cancel">إلغاء</a>
+  </form>
+</div>
