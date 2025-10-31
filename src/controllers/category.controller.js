@@ -1,52 +1,75 @@
 const Category = require("../models/category");
 
-exports.createCategory = async (req, res, next) => {
-  try {
-    const category = await Category.create(req.body);
-    res.status(201).json(category);
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.getCategories = async (req, res, next) => {
+exports.getAllCategories = async (req, res, next) => {
   try {
     const categories = await Category.find();
-    res.json(categories);
+    res.render("pages/categories", { categories });
   } catch (err) {
-    next(err);
+    console.error("Error in getAllCategories:", err);
+    res.render("pages/categories", { categories: [] });
   }
 };
 
-exports.getCategory = async (req, res, next) => {
+exports.createCategory = async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.id);
-    if (!category) return res.status(404).json({ message: "Category not found" });
-    res.json(category);
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).send('اسم القسم مطلوب');
+    }
+    
+    const newCategory = new Category({ name: name.trim() });
+    await newCategory.save();
+    res.redirect("/admin/categories");
   } catch (err) {
-    next(err);
+    console.error("Error in createCategory:", err);
+    if (err.code === 11000) {
+      res.status(400).send('هذا القسم موجود بالفعل');
+    } else {
+      res.status(500).send('خطأ في إضافة القسم');
+    }
   }
 };
 
 exports.updateCategory = async (req, res, next) => {
   try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-    if (!category) return res.status(404).json({ message: "Category not found" });
-    res.json(category);
+    const { id } = req.params;
+    const { name } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).send('اسم القسم مطلوب');
+    }
+    
+    const category = await Category.findByIdAndUpdate(
+      id, 
+      { name: name.trim() }, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!category) {
+      return res.status(404).send('القسم غير موجود');
+    }
+    
+    res.redirect("/admin/categories");
   } catch (err) {
-    next(err);
+    console.error("Error in updateCategory:", err);
+    res.status(500).send('خطأ في تعديل القسم');
   }
 };
 
 exports.deleteCategory = async (req, res, next) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category) return res.status(404).json({ message: "Category not found" });
-    res.status(204).end();
+    const { id } = req.params;
+    
+    const category = await Category.findByIdAndDelete(id);
+    
+    if (!category) {
+      return res.status(404).send('القسم غير موجود');
+    }
+    
+    res.redirect("/admin/categories");
   } catch (err) {
-    next(err);
+    console.error("Error in deleteCategory:", err);
+    res.status(500).send('خطأ في حذف القسم');
   }
 };

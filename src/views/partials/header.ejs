@@ -1,16 +1,35 @@
 <header>
   <nav>
     <div class="logo">
-      <img src="../../public/images/logo nassamat bladi copie.png" alt="nassamat Beladi" width="120">
+      <img src="/public/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" width="120">
     </div>
     <div class="nav-links">
-      <a href="#" class="nav-link" data-page="home">الرئيسية</a>
-      <a href="#" class="nav-link" data-page="products">المنتجات</a>
-      <a href="#" class="nav-link" data-page="categories">الأقسام</a>
-      <a href="#" class="nav-link" data-page="users">المستخدمين</a>
-      <a href="#" class="nav-link" data-page="orders">الطلبات</a>
-      <a href="#" class="nav-link" data-page="coupons">الكوبونات</a>
+      <a href="/" class="nav-link">الرئيسية</a>
+      <a href="#store" class="nav-link">المتجر</a>
+            <a href="/admin/categories" class="nav-link">الأقسام</a>
+
+      <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
+      <a href="/contact" class="nav-link">اتصل بنا</a>
     </div>
   </nav>
 </header>
-<hr>
+
+<script>
+// Update cart count on page load
+document.addEventListener('DOMContentLoaded', function() {
+  updateCartCount();
+});
+
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let totalItems = 0;
+  cart.forEach(item => {
+    totalItems += item.quantity;
+  });
+  
+  const cartCountElement = document.getElementById('cart-count');
+  if (cartCountElement) {
+    cartCountElement.textContent = totalItems;
+  }
+}
+</script>

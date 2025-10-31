@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
@@ -28,31 +29,44 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-
-
-// Middleware
-app.use(express.json());
-app.use(cors());
-
-// static files from public directory
-app.use("/public", express.static(path.join(__dirname, "public")));
-
-app.use("/static", express.static(path.join(__dirname, "static")));
-
-// EJS
+// Set view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Connect to MongoDB
-connectDB("mongodb://127.0.0.1:27017/nassamat_beladi");
+// Static files - FIXED PATH
+app.use("/public", express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../public")));
+
+// Connect to MongoDB Atlas
+connectDB();
+
+// Home route with error handling
+app.get("/", async (req, res) => {
+  try {
+    const products = await Product.find().populate("category");
+    const categories = await Category.find();
+    res.render("index", { products, categories });
+  } catch (err) {
+    console.error("Error loading home page:", err);
+    res.render("index", { products: [], categories: [] });
+  }
+});
 
 // API Routes
-app.use("/api/users", userRoutes);
+app.use("/auth", userRoutes);
 app.use("/admin/categories", categoryRoutes);
 app.use("/admin/products", productRoutes);
-app.use("/admin/coupons", couponRoutes);
 app.use("/admin/orders", orderRoutes);
-app.use("/admin/reviews", reviewRoutes);
+app.use("/admin/coupons", couponRoutes);
+
+// Cart and Contact routes
+app.get("/cart", (req, res) => {
+  res.render("cart");
+});
+
+app.get("/contact", (req, res) => {
+  res.render("contact");
+});
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -98,11 +112,6 @@ app.get("/pages/:name", async (req, res) => {
   }
 });
 
-// Home route
-app.get("/", (req, res) => {
-  res.render("index");
-});
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Not found" });
@@ -115,5 +124,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`📁 Static files served from: ${path.join(__dirname, "../public")}`);
+});
