@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تسجيل الدخول</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include("../partials/header") %>
+  <div class="form-container">
+    <h2>تسجيل الدخول</h2>
+    <% if (error) { %><div style="color:#dc3545;margin-bottom:10px;"><%= error %></div><% } %>
+    <form action="/auth/login" method="POST">
+      <input type="email" name="email" placeholder="البريد الإلكتروني" value="<%= old?.email || '' %>" required>
+      <input type="password" name="password" placeholder="كلمة المرور" required>
+      <button type="submit">دخول</button>
+    </form>
+    <p style="text-align:center;margin-top:10px;">مستخدم جديد؟ <a href="/auth/signup">إنشاء حساب</a></p>
+  </div>
+  <%- include("../partials/footer") %>
+</body>
+</html>
+
+<!-- Run once in a temporary script or Mongo shell -->
+db.users.updateOne({ email: "admin@example.com" }, { $set: { role: "admin" } })

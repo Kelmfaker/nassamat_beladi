@@ -1,14 +1,21 @@
 <header>
   <nav>
     <div class="logo">
+      <img src="/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" width="120">
     </div>
     <div class="nav-links">
       <a href="/" class="nav-link">الرئيسية</a>
       <a href="#store" class="nav-link">المتجر</a>
-            <a href="/admin/categories" class="nav-link">الأقسام</a>
-
+      <a href="/admin/categories" class="nav-link">الأقسام</a>
       <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
       <a href="/contact" class="nav-link">اتصل بنا</a>
+      <% if (typeof user !== 'undefined') { %>
+        <span class="nav-link">مرحباً، <%= user.name %></span>
+        <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
+      <% } else { %>
+        <a href="/auth/login" class="nav-link">تسجيل الدخول</a>
+        <a href="/auth/signup" class="nav-link">إنشاء حساب</a>
+      <% } %>
     </div>
   </nav>
 </header>

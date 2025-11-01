@@ -3,7 +3,13 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const { attachUser } = require("./middleware/auth.middleware");
 const connectDB = require("./config/database");
+
+
+
+
 
 // Models
 const Category = require("./models/category");
@@ -20,8 +26,15 @@ const productRoutes = require("./routes/product.routes");
 const couponRoutes = require("./routes/coupon.routes");
 const orderRoutes = require("./routes/order.routes");
 const reviewRoutes = require("./routes/review.routes");
+const authRoutes = require("./routes/auth.routes");
+
 
 const app = express();
+
+app.use(cookieParser());
+// attach user (if logged in) to req and EJS
+app.use(attachUser);
+
 
 // Middleware
 app.use(cors());
@@ -32,6 +45,13 @@ app.use(morgan("dev"));
 // Set view engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+// Static files (ensure these exist)
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/css", express.static(path.join(__dirname, "../public/css")));
+app.use("/js", express.static(path.join(__dirname, "../public/js")));
+app.use("/images", express.static(path.join(__dirname, "../public/images")));
+app.use("/fonts", express.static(path.join(__dirname, "../public/fonts")));
 
 // Static files - FIXED PATH
 app.use("/public", express.static(path.join(__dirname, "../public")));
@@ -53,7 +73,7 @@ app.get("/", async (req, res) => {
 });
 
 // API Routes
-app.use("/auth", userRoutes);
+app.use("/auth", authRoutes);
 app.use("/admin/categories", categoryRoutes);
 app.use("/admin/products", productRoutes);
 app.use("/admin/orders", orderRoutes);
