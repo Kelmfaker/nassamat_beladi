@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>إدارة الفئات - Thinker Honey</title>
+  <title>إدارة الفئات - nassamat Beladi</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -89,9 +89,12 @@
   </style>
 </head>
 <body>
-
-  <%- include('../partials/header') %>
-
+ <% if (user && user.role === 'admin') { %>
+    <%- include("partials/admin-header") %>
+  <% } else { %>
+    <%- include("partials/header") %>
+  <% } %>
+  
   <div class="content">
     <h1 style="text-align: center; color: #825221; margin-bottom: 30px;">إدارة الفئات</h1>
 

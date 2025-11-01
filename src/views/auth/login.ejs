@@ -6,8 +6,10 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include("../partials/header") %>
-  <div class="form-container">
+
+    <%- include("../partials/header") %>
+  
+    <div class="form-container">
     <h2>تسجيل الدخول</h2>
     <% if (error) { %><div style="color:#dc3545;margin-bottom:10px;"><%= error %></div><% } %>
     <form action="/auth/login" method="POST">

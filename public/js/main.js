@@ -19,14 +19,37 @@ function updateCartCount() {
 }
 
 // Mobile menu toggle
-const toggleButton = document.getElementById("menu-toggle");
-const menu = document.getElementById("nav-links");
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('menu-toggle');
+  const navLinks = document.getElementById('nav-links');
 
-if (toggleButton && menu) {
-  toggleButton.addEventListener("click", function (e) {
+  if (!toggleBtn || !navLinks) return;
+
+  const closeMenu = () => {
+    navLinks.classList.remove('show');
+    toggleBtn.classList.remove('active');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+  };
+
+  toggleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    menu.classList.toggle("show");
+    const willShow = !navLinks.classList.contains('show');
+    navLinks.classList.toggle('show', willShow);
+    toggleBtn.classList.toggle('active', willShow);
+    toggleBtn.setAttribute('aria-expanded', String(willShow));
   });
-}
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!navLinks.contains(e.target) && !toggleBtn.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Close after clicking a link
+  navLinks.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', closeMenu)
+  );
+});
 
 console.log('✅ Thinker Honey - Main JS Loaded');

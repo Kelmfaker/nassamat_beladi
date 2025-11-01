@@ -6,8 +6,8 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const { attachUser } = require("./middleware/auth.middleware");
 const connectDB = require("./config/database");
-
-
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
 
 
 
@@ -31,121 +31,58 @@ const authRoutes = require("./routes/auth.routes");
 
 const app = express();
 
-app.use(cookieParser());
-// attach user (if logged in) to req and EJS
-app.use(attachUser);
-
-
 // Middleware
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan("dev"));
+app.use(cookieParser());
+app.use(attachUser); // must come before app.use('/auth', ...) and other routes
 
-// Set view engine
+// views + static
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-// Static files (ensure these exist)
-app.use(express.static(path.join(__dirname, "../public")));
-app.use("/css", express.static(path.join(__dirname, "../public/css")));
-app.use("/js", express.static(path.join(__dirname, "../public/js")));
-app.use("/images", express.static(path.join(__dirname, "../public/images")));
-app.use("/fonts", express.static(path.join(__dirname, "../public/fonts")));
-
-// Static files - FIXED PATH
-app.use("/public", express.static(path.join(__dirname, "../public")));
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Connect to MongoDB Atlas
-connectDB();
-
-// Home route with error handling
-app.get("/", async (req, res) => {
-  try {
-    const products = await Product.find().populate("category");
-    const categories = await Category.find();
-    res.render("index", { products, categories });
-  } catch (err) {
-    console.error("Error loading home page:", err);
-    res.render("index", { products: [], categories: [] });
-  }
-});
-
-// API Routes
+// routes
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 app.use("/admin/categories", categoryRoutes);
 app.use("/admin/products", productRoutes);
-app.use("/admin/orders", orderRoutes);
-app.use("/admin/coupons", couponRoutes);
 
-// Cart and Contact routes
-app.get("/cart", (req, res) => {
-  res.render("cart");
-});
-
-app.get("/contact", (req, res) => {
-  res.render("contact");
-});
-
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true });
-});
-
-// Frontend Pages
-app.get("/pages/:name", async (req, res) => {
-  const name = req.params.name;
-  let data = {};
-
+// Home route (single response)
+app.get("/", async (req, res, next) => {
   try {
-    switch (name) {
-      case "categories":
-        data.categories = await Category.find();
-        break;
-      case "products":
-      case "showproducts":
-      case "index":
-        data.products = await Product.find().populate("category");
-        data.categories = await Category.find();
-        break;
-      case "users":
-        data.users = await User.find();
-        break;
-      case "orders":
-        data.orders = await Order.find().populate("user").populate("products.product");
-        break;
-      case "coupons":
-        data.coupons = await Coupon.find();
-        break;
-      case "reviews":
-        data.reviews = await Review.find().populate("product").populate("user");
-        break;
-      default:
-        return res.status(404).send("Page not found");
-    }
-
-    res.render(`pages/${name}`, data);
+    const products = await Product.find().populate("category").lean();
+    return res.render("index", { products, user: req.user || null });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading page data");
+    return next(err);
   }
 });
 
-// 404 handler
+// 404 (no next here)
 app.use((req, res) => {
-  res.status(404).json({ message: "Not found" });
+  if (res.headersSent) return;
+  res.status(404).send("Not Found");
 });
 
-// General error handler
+// Error handler (guard headersSent)
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(err.status || 500).json({ message: err.message || "Server error" });
+  if (res.headersSent) return next(err);
+  res.status(500).send("Internal Server Error");
 });
 
-// Start server
+// Start after DB connects
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📁 Static files served from: ${path.join(__dirname, "../public")}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`📁 Static files served from: ${path.join(__dirname, "../public")}`);
+    });
+  })
+  .catch((e) => {
+    console.error("❌ Failed to connect to MongoDB:", e);
+    process.exit(1);
+  });

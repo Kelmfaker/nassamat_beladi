@@ -7,18 +7,22 @@
 </head>
 <body>
   <%- include("../partials/header") %>
+
   <div class="form-container">
     <h2>إنشاء حساب</h2>
-    <% if (error) { %><div style="color:#dc3545;margin-bottom:10px;"><%= error %></div><% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div style="color:#dc3545;margin-bottom:10px;"><%= error %></div>
+    <% } %>
     <form action="/auth/signup" method="POST">
-      <input type="text" name="name" placeholder="الاسم" value="<%= old?.name || '' %>" required>
-      <input type="email" name="email" placeholder="البريد الإلكتروني" value="<%= old?.email || '' %>" required>
+      <input type="text" name="name" placeholder="الاسم" value="<%= (old && old.name) ? old.name : '' %>" required>
+      <input type="email" name="email" placeholder="البريد الإلكتروني" value="<%= (old && old.email) ? old.email : '' %>" required>
       <input type="password" name="password" placeholder="كلمة المرور" required>
       <input type="password" name="confirmPassword" placeholder="تأكيد كلمة المرور" required>
       <button type="submit">تسجيل</button>
     </form>
     <p style="text-align:center;margin-top:10px;">لديك حساب؟ <a href="/auth/login">سجل الدخول</a></p>
   </div>
+
   <%- include("../partials/footer") %>
 </body>
 </html>

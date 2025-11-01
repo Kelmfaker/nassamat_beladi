@@ -7,6 +7,13 @@
 
 </head>
 <body>
+
+   <% if (user && user.role === 'admin') { %>
+    <%- include("partials/admin-header") %>
+  <% } else { %>
+    <%- include("partials/header") %>
+  <% } %>
+
     <div class="content">
 
 

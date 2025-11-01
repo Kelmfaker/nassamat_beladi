@@ -3,37 +3,21 @@
     <div class="logo">
       <img src="/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" />
     </div>
-
     <button id="menu-toggle" class="menu-toggle" aria-label="فتح/إغلاق القائمة" aria-expanded="false" aria-controls="nav-links">
       <span></span><span></span><span></span>
     </button>
-
     <div class="nav-links" id="nav-links">
-      <a href="/" class="nav-link">الرئيسية</a>
-      <a href="#store" class="nav-link">المتجر</a>
-      <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
-      <a href="/contact" class="nav-link">اتصل بنا</a>
-      <% if (user) { %>
-        <span class="nav-link user-welcome">مرحباً، <%= user.name %></span>
-        <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
-      <% } else { %>
-        <a href="/auth/login" class="nav-link">تسجيل الدخول</a>
-        <a href="/auth/signup" class="nav-link">إنشاء حساب</a>
-      <% } %>
+      <a href="/admin" class="nav-link">لوحة التحكم</a>
+      <a href="/admin/products" class="nav-link">المنتجات</a>
+      <a href="/admin/categories" class="nav-link">الأقسام</a>
+      <a href="/admin/orders" class="nav-link">الطلبات</a>
+      <a href="/" class="nav-link">الموقع الرئيسي</a>
+      <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
     </div>
   </nav>
 </header>
 
 <script>
-// cart count
-(function(){
-  const cart = JSON.parse(localStorage.getItem('cart')||'[]');
-  const total = cart.reduce((s,i)=>s+(i.quantity||0),0);
-  const el = document.getElementById('cart-count');
-  if (el) el.textContent = total;
-})();
-
-// mobile menu
 (function(){
   const btn = document.getElementById('menu-toggle');
   const menu = document.getElementById('nav-links');
@@ -53,7 +37,6 @@
   document.addEventListener('click', (e)=>{
     if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
   });
-  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click', closeMenu));
   window.addEventListener('scroll', closeMenu);
 })();
 </script>

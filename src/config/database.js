@@ -1,38 +1,36 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  try {
-    // Remove any previous connection attempts
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
+let cached = global.__mongoose;
+if (!cached) cached = global.__mongoose = { conn: null, promise: null };
 
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+
+  const uri = process.env.MONGO_URI;
+  if (!uri) throw new Error('MONGO_URI is missing');
+
+  const dbName = process.env.DB_NAME || 'nassamatbeladi';
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(uri, {
+      dbName,
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      appName: 'nassamat-beladi',
+      bufferCommands: false,
+    }).then((m) => {
+      console.log(`✅ MongoDB connected (db: ${dbName})`);
+      return m;
+    }).catch((e) => {
+      cached.promise = null;
+      throw e;
     });
-
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📁 Database: ${conn.connection.name}`);
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err.message);
-    console.log("🔄 Retrying connection in 5 seconds...");
-    setTimeout(connectDB, 5000);
   }
-};
 
-// Handle connection events
-mongoose.connection.on('connected', () => {
-  console.log('✅ Mongoose connected to MongoDB Atlas');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('❌ Mongoose connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('⚠️  Mongoose disconnected');
-});
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
 
 module.exports = connectDB;
