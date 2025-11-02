@@ -14,7 +14,7 @@
       <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
       <a href="/contact" class="nav-link">اتصل بنا</a>
       <% if (user) { %>
-        <span class="nav-link user-welcome">مرحباً، <%= user.name %></span>
+        <a href="/users/profile" class="nav-link"><i class="fas fa-user"></i> حسابي</a>
         <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
       <% } else { %>
         <a href="/auth/login" class="nav-link">تسجيل الدخول</a>

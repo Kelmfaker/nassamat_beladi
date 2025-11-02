@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>الملف الشخصي</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("../partials/header") %>
+
+  <main class="profile-content">
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <i class="fas fa-user-circle"></i>
+        </div>
+        <h1>الملف الشخصي</h1>
+        <p class="user-role"><%= userProfile.role === 'admin' ? 'مدير' : 'مستخدم' %></p>
+      </div>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i> <%= success %>
+        </div>
+      <% } %>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error">
+          <i class="fas fa-exclamation-circle"></i> <%= error %>
+        </div>
+      <% } %>
+
+      <div class="profile-tabs">
+        <button class="tab-btn active" onclick="showTab('info')">المعلومات الشخصية</button>
+        <button class="tab-btn" onclick="showTab('password')">تغيير كلمة المرور</button>
+        <button class="tab-btn" onclick="showTab('orders')">طلباتي</button>
+      </div>
+
+      <!-- Personal Info Tab -->
+      <div id="info-tab" class="tab-content active">
+        <div class="profile-card">
+          <h2>المعلومات الشخصية</h2>
+          <form action="/users/profile" method="POST" class="profile-form">
+            <div class="form-group">
+              <label for="name">
+                <i class="fas fa-user"></i> الاسم الكامل
+              </label>
+              <input type="text" id="name" name="name" value="<%= userProfile.name %>" required>
+            </div>
+
+            <div class="form-group">
+              <label for="email">
+                <i class="fas fa-envelope"></i> البريد الإلكتروني
+              </label>
+              <input type="email" id="email" name="email" value="<%= userProfile.email %>" required>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">
+                <i class="fas fa-phone"></i> رقم الهاتف
+              </label>
+              <input type="tel" id="phone" name="phone" value="<%= userProfile.phone || '' %>" placeholder="0500000000">
+            </div>
+
+            <div class="form-group">
+              <label for="address">
+                <i class="fas fa-map-marker-alt"></i> العنوان
+              </label>
+              <textarea id="address" name="address" rows="3" placeholder="العنوان الكامل"><%= userProfile.address || '' %></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> حفظ التغييرات
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Password Tab -->
+      <div id="password-tab" class="tab-content">
+        <div class="profile-card">
+          <h2>تغيير كلمة المرور</h2>
+          <form action="/users/profile" method="POST" class="profile-form">
+            <input type="hidden" name="name" value="<%= userProfile.name %>">
+            <input type="hidden" name="email" value="<%= userProfile.email %>">
+            <input type="hidden" name="phone" value="<%= userProfile.phone || '' %>">
+            <input type="hidden" name="address" value="<%= userProfile.address || '' %>">
+
+            <div class="form-group">
+              <label for="currentPassword">
+                <i class="fas fa-lock"></i> كلمة المرور الحالية
+              </label>
+              <input type="password" id="currentPassword" name="currentPassword" required>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">
+                <i class="fas fa-key"></i> كلمة المرور الجديدة
+              </label>
+              <input type="password" id="newPassword" name="newPassword" required minlength="6">
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">
+                <i class="fas fa-key"></i> تأكيد كلمة المرور
+              </label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> تحديث كلمة المرور
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Orders Tab -->
+      <div id="orders-tab" class="tab-content">
+        <div class="profile-card">
+          <h2>طلباتي</h2>
+          <p class="text-muted">قريباً - سيتم عرض طلباتك هنا</p>
+          <a href="/users/orders" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i> عرض جميع الطلبات
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include("../partials/footer") %>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Password confirmation validation
+    document.getElementById('confirmPassword')?.addEventListener('input', function() {
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = this.value;
+      if (newPass !== confirmPass) {
+        this.setCustomValidity('كلمات المرور غير متطابقة');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+  </script>
+</body>
+</html>
