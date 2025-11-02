@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>المنتجات - نسمات بلادي</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("partials/header") %>
+
+  <section class="products-content">
+    <div class="products-container">
+      <div class="products-header">
+        <h1><i class="fas fa-seedling"></i> المنتجات</h1>
+        <p>أفضل المنتجات الطبيعية من نسمات بلادي</p>
+      </div>
+
+      <div class="products-toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="search" name="q" placeholder="ابحث عن منتج..." id="searchInput">
+        </div>
+        <div class="toolbar-actions">
+          <select class="sort-select" name="sort" id="sortSelect">
+            <option value="new">الأحدث</option>
+            <option value="price_asc">السعر: من الأرخص</option>
+            <option value="price_desc">السعر: من الأعلى</option>
+            <option value="name">الاسم: أ-ي</option>
+          </select>
+          <div class="view-toggle">
+            <button type="button" class="active" data-view="grid"><i class="fas fa-border-all"></i></button>
+            <button type="button" data-view="list"><i class="fas fa-list-ul"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-chips">
+        <button class="chip active" data-category="all">الكل</button>
+        <% if (categories && categories.length > 0) { %>
+          <% categories.forEach(cat => { %>
+            <button class="chip" data-category="<%= cat._id %>"><%= cat.name %></button>
+          <% }) %>
+        <% } else { %>
+          <button class="chip" data-category="honey">عسل</button>
+          <button class="chip" data-category="herbs">أعشاب</button>
+          <button class="chip" data-category="oils">زيوت</button>
+        <% } %>
+      </div>
+
+      <div class="products-grid">
+        <% if (products && products.length > 0) { %>
+          <% products.forEach(product => { %>
+            <article class="product-card" data-product-id="<%= product._id %>">
+              <div class="product-media">
+                <div class="badges">
+                  <% if (product.discount && product.discount > 0) { %>
+                    <span class="badge-tag badge-sale">خصم <%= product.discount %>%</span>
+                  <% } %>
+                  <% if (product.isNew) { %>
+                    <span class="badge-tag badge-new">جديد</span>
+                  <% } %>
+                </div>
+                <div class="product-actions">
+                  <button class="action-icon" title="عرض سريع" onclick="quickView('<%= product._id %>')">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <img src="<%= product.image || '/images/default-product.jpg' %>" alt="<%= product.name %>">
+              </div>
+              
+              <div class="product-body">
+                <h3 class="product-title"><%= product.name %></h3>
+                
+                <% if (product.category) { %>
+                  <div class="product-meta">
+                    <span><%= product.category.name || product.category %></span>
+                  </div>
+                <% } %>
+
+                <% if (product.rating && product.reviews) { %>
+                  <div class="product-rating">
+                    <% for(let i = 1; i <= 5; i++) { %>
+                      <% if (i <= Math.floor(product.rating)) { %>
+                        <i class="fas fa-star"></i>
+                      <% } else if (i === Math.ceil(product.rating) && product.rating % 1 !== 0) { %>
+                        <i class="fas fa-star-half-alt"></i>
+                      <% } else { %>
+                        <i class="far fa-star"></i>
+                      <% } %>
+                    <% } %>
+                    <span class="count">(<%= product.reviews || 0 %>)</span>
+                  </div>
+                <% } %>
+
+                <div class="product-price">
+                  <% if (product.discount && product.discount > 0) { %>
+                    <span class="price-old"><%= product.price.toFixed(2) %> درهم</span>
+                    <span class="price-current"><%= (product.price * (1 - product.discount / 100)).toFixed(2) %> درهم</span>
+                  <% } else { %>
+                    <span class="price-current"><%= product.price.toFixed(2) %> درهم</span>
+                  <% } %>
+                </div>
+
+                <div class="product-cta">
+                  <button class="btn-add" onclick="addToCart('<%= product._id %>', 1)">
+                    <i class="fas fa-cart-plus"></i> أضف إلى السلة
+                  </button>
+                  <button class="btn-wishlist" title="المفضلة" onclick="toggleWishlist('<%= product._id %>')">
+                    <i class="fas fa-heart"></i>
+                  </button>
+                </div>
+              </div>
+            </article>
+          <% }) %>
+        <% } else { %>
+          <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+            <i class="fas fa-box-open" style="font-size: 4rem; color: #ddd; margin-bottom: 1rem;"></i>
+            <h3 style="color: #666;">لا توجد منتجات حالياً</h3>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (totalPages && totalPages > 1) { %>
+        <nav class="pagination">
+          <% if (currentPage > 1) { %>
+            <a class="page-link" href="?page=<%= currentPage - 1 %>"><i class="fas fa-angle-right"></i></a>
+          <% } %>
+          
+          <% for(let i = 1; i <= totalPages; i++) { %>
+            <a class="page-link <%= i === currentPage ? 'active' : '' %>" href="?page=<%= i %>"><%= i %></a>
+          <% } %>
+          
+          <% if (currentPage < totalPages) { %>
+            <a class="page-link" href="?page=<%= currentPage + 1 %>"><i class="fas fa-angle-left"></i></a>
+          <% } %>
+        </nav>
+      <% } %>
+    </div>
+  </section>
+
+  <%- include("partials/footer") %>
+
+  <script>
+    // View toggle (grid/list)
+    document.querySelectorAll('.view-toggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const grid = document.querySelector('.products-grid');
+        if (!grid) return;
+        grid.classList.toggle('list-view', btn.dataset.view === 'list');
+      });
+    });
+
+    // Category filter
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const category = chip.dataset.category;
+        // TODO: Filter products by category via AJAX or page reload
+        console.log('Filter by:', category);
+      });
+    });
+
+    // Search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.product-card').forEach(card => {
+          const title = card.querySelector('.product-title').textContent.toLowerCase();
+          card.style.display = title.includes(query) ? '' : 'none';
+        });
+      });
+    }
+
+    // Sort
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+      sortSelect.addEventListener('change', (e) => {
+        // TODO: Implement sorting logic
+        console.log('Sort by:', e.target.value);
+      });
+    }
+
+    // Add to cart function
+    function addToCart(productId, quantity) {
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('تمت إضافة المنتج إلى السلة');
+          // Update cart count in header if exists
+          const cartCount = document.getElementById('cart-count');
+          if (cartCount && data.cartCount) {
+            cartCount.textContent = data.cartCount;
+          }
+        }
+      })
+      .catch(err => console.error(err));
+    }
+
+    // Wishlist toggle
+    function toggleWishlist(productId) {
+      // TODO: Implement wishlist functionality
+      console.log('Toggle wishlist:', productId);
+      alert('سيتم إضافة هذه الميزة قريباً');
+    }
+
+    // Quick view
+    function quickView(productId) {
+      // TODO: Open modal with product details
+      window.location.href = `/products/${productId}`;
+    }
+  </script>
+</body>
+</html>

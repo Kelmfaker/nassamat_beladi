@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>الملف الشخصي</title>
+  <title>حسابي - نسمات بلادي</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -13,149 +13,165 @@
   <main class="profile-content">
     <div class="profile-container">
       <div class="profile-header">
-        <div class="profile-avatar">
-          <i class="fas fa-user-circle"></i>
-        </div>
-        <h1>الملف الشخصي</h1>
-        <p class="user-role"><%= userProfile.role === 'admin' ? 'مدير' : 'مستخدم' %></p>
+        <h1><i class="fas fa-user-circle"></i> حسابي</h1>
+        <p>إدارة بياناتك الشخصية وعناوينك وإعدادات الحساب</p>
       </div>
 
-      <% if (typeof success !== 'undefined' && success) { %>
-        <div class="alert alert-success">
-          <i class="fas fa-check-circle"></i> <%= success %>
-        </div>
-      <% } %>
+      <div class="profile-grid">
+        <!-- Main Column -->
+        <section class="profile-main">
+          <!-- Personal Info -->
+          <div class="profile-card">
+            <h2><i class="fas fa-id-card"></i> المعلومات الشخصية</h2>
+            <form class="profile-form" method="POST" action="/users/profile">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الاسم الكامل</label>
+                  <input type="text" name="name" value="<%= (user && user.name) || '' %>" required>
+                </div>
+                <div class="form-group">
+                  <label>البريد الإلكتروني</label>
+                  <input type="email" name="email" value="<%= (user && user.email) || '' %>" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>رقم الهاتف</label>
+                  <input type="tel" name="phone" value="<%= (user && user.phone) || '' %>">
+                </div>
+                <div class="form-group">
+                  <label>المدينة</label>
+                  <input type="text" name="city" value="<%= (user && user.city) || '' %>">
+                </div>
+              </div>
+              <button class="btn btn-save" type="submit">
+                <i class="fas fa-save"></i> حفظ التغييرات
+              </button>
+            </form>
+          </div>
 
-      <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-error">
-          <i class="fas fa-exclamation-circle"></i> <%= error %>
-        </div>
-      <% } %>
+          <!-- Address -->
+          <div class="profile-card">
+            <h2><i class="fas fa-map-marker-alt"></i> العنوان الافتراضي للشحن</h2>
+            <% if (user && user.address) { %>
+              <div class="address-view">
+                <p><strong><i class="fas fa-user"></i></strong> <%= user.address.fullName || user.name %></p>
+                <p><i class="fas fa-phone"></i> <%= user.address.phone %></p>
+                <p><i class="fas fa-map"></i> <%= user.address.address %></p>
+                <p><i class="fas fa-location-dot"></i> <%= user.address.city %>, <%= user.address.wilaya %></p>
+                <% if (user.address.postalCode) { %><p>الرمز البريدي: <%= user.address.postalCode %></p><% } %>
+              </div>
+            <% } %>
+            <form class="profile-form" method="POST" action="/users/profile/address">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الاسم الكامل</label>
+                  <input type="text" name="fullName" value="<%= (user && user.address && user.address.fullName) || (user && user.name) || '' %>" required>
+                </div>
+                <div class="form-group">
+                  <label>الهاتف</label>
+                  <input type="tel" name="phone" value="<%= (user && user.address && user.address.phone) || (user && user.phone) || '' %>" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>العنوان</label>
+                <input type="text" name="address" value="<%= (user && user.address && user.address.address) || '' %>" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الولاية</label>
+                  <input type="text" name="wilaya" value="<%= (user && user.address && user.address.wilaya) || '' %>" required>
+                </div>
+                <div class="form-group">
+                  <label>المدينة</label>
+                  <input type="text" name="city" value="<%= (user && user.address && user.address.city) || '' %>" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الرمز البريدي (اختياري)</label>
+                  <input type="text" name="postalCode" value="<%= (user && user.address && user.address.postalCode) || '' %>">
+                </div>
+                <div class="form-group"></div>
+              </div>
+              <button class="btn btn-save" type="submit">
+                <i class="fas fa-location-dot"></i> حفظ العنوان
+              </button>
+            </form>
+          </div>
 
-      <div class="profile-tabs">
-        <button class="tab-btn active" onclick="showTab('info')">المعلومات الشخصية</button>
-        <button class="tab-btn" onclick="showTab('password')">تغيير كلمة المرور</button>
-        <button class="tab-btn" onclick="showTab('orders')">طلباتي</button>
-      </div>
+          <!-- Password -->
+          <div class="profile-card">
+            <h2><i class="fas fa-key"></i> تغيير كلمة المرور</h2>
+            <form class="profile-form" method="POST" action="/users/profile/password">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>كلمة المرور الحالية</label>
+                  <input type="password" name="currentPassword" required>
+                </div>
+                <div class="form-group">
+                  <label>كلمة المرور الجديدة</label>
+                  <input type="password" name="newPassword" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>تأكيد كلمة المرور الجديدة</label>
+                <input type="password" name="confirmPassword" required>
+              </div>
+              <button class="btn btn-save" type="submit">
+                <i class="fas fa-lock"></i> تحديث كلمة المرور
+              </button>
+            </form>
+          </div>
+        </section>
 
-      <!-- Personal Info Tab -->
-      <div id="info-tab" class="tab-content active">
-        <div class="profile-card">
-          <h2>المعلومات الشخصية</h2>
-          <form action="/users/profile" method="POST" class="profile-form">
-            <div class="form-group">
-              <label for="name">
-                <i class="fas fa-user"></i> الاسم الكامل
-              </label>
-              <input type="text" id="name" name="name" value="<%= userProfile.name %>" required>
+        <!-- Sidebar -->
+        <aside class="profile-sidebar">
+          <div class="profile-card">
+            <div class="avatar-card">
+              <div class="avatar">
+                <img src="<%= (user && user.avatar) || '/images/avatar-placeholder.png' %>" alt="<%= (user && user.name) || 'User' %>">
+                <form class="avatar-upload" method="POST" action="/users/profile/avatar" enctype="multipart/form-data">
+                  <label class="btn btn-light">
+                    <i class="fas fa-camera"></i> تغيير الصورة
+                    <input type="file" name="avatar" accept="image/*" onchange="this.form.submit()">
+                  </label>
+                </form>
+              </div>
+              <div class="avatar-meta">
+                <h3><%= (user && user.name) || 'المستخدم' %></h3>
+                <p><i class="fas fa-envelope"></i> <%= (user && user.email) || '' %></p>
+                <% if (user && user.phone) { %><p><i class="fas fa-phone"></i> <%= user.phone %></p><% } %>
+              </div>
             </div>
+          </div>
 
-            <div class="form-group">
-              <label for="email">
-                <i class="fas fa-envelope"></i> البريد الإلكتروني
-              </label>
-              <input type="email" id="email" name="email" value="<%= userProfile.email %>" required>
+          <div class="profile-card">
+            <h2><i class="fas fa-chart-line"></i> لمحة سريعة</h2>
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-value"><%= (typeof ordersCount !== 'undefined' && ordersCount !== null) ? ordersCount : 0 %></span>
+                <span class="stat-label">الطلبات</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value"><%= (user && user.address) ? 1 : 0 %></span>
+                <span class="stat-label">العناوين</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value"><%= (user && user.role === 'admin') ? 'مشرف' : 'عميل' %></span>
+                <span class="stat-label">الصلاحية</span>
+              </div>
             </div>
-
-            <div class="form-group">
-              <label for="phone">
-                <i class="fas fa-phone"></i> رقم الهاتف
-              </label>
-              <input type="tel" id="phone" name="phone" value="<%= userProfile.phone || '' %>" placeholder="0500000000">
+            <div class="quick-links">
+              <a class="btn btn-secondary btn-block" href="/orders/my-orders"><i class="fas fa-bag-shopping"></i> طلباتي</a>
+              <a class="btn btn-primary btn-block" href="/"><i class="fas fa-store"></i> التسوق الآن</a>
             </div>
-
-            <div class="form-group">
-              <label for="address">
-                <i class="fas fa-map-marker-alt"></i> العنوان
-              </label>
-              <textarea id="address" name="address" rows="3" placeholder="العنوان الكامل"><%= userProfile.address || '' %></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save"></i> حفظ التغييرات
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Password Tab -->
-      <div id="password-tab" class="tab-content">
-        <div class="profile-card">
-          <h2>تغيير كلمة المرور</h2>
-          <form action="/users/profile" method="POST" class="profile-form">
-            <input type="hidden" name="name" value="<%= userProfile.name %>">
-            <input type="hidden" name="email" value="<%= userProfile.email %>">
-            <input type="hidden" name="phone" value="<%= userProfile.phone || '' %>">
-            <input type="hidden" name="address" value="<%= userProfile.address || '' %>">
-
-            <div class="form-group">
-              <label for="currentPassword">
-                <i class="fas fa-lock"></i> كلمة المرور الحالية
-              </label>
-              <input type="password" id="currentPassword" name="currentPassword" required>
-            </div>
-
-            <div class="form-group">
-              <label for="newPassword">
-                <i class="fas fa-key"></i> كلمة المرور الجديدة
-              </label>
-              <input type="password" id="newPassword" name="newPassword" required minlength="6">
-            </div>
-
-            <div class="form-group">
-              <label for="confirmPassword">
-                <i class="fas fa-key"></i> تأكيد كلمة المرور
-              </label>
-              <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-save"></i> تحديث كلمة المرور
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Orders Tab -->
-      <div id="orders-tab" class="tab-content">
-        <div class="profile-card">
-          <h2>طلباتي</h2>
-          <p class="text-muted">قريباً - سيتم عرض طلباتك هنا</p>
-          <a href="/users/orders" class="btn btn-primary">
-            <i class="fas fa-shopping-bag"></i> عرض جميع الطلبات
-          </a>
-        </div>
+          </div>
+        </aside>
       </div>
     </div>
   </main>
 
   <%- include("../partials/footer") %>
-
-  <script>
-    function showTab(tabName) {
-      // Hide all tabs
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-
-      // Show selected tab
-      document.getElementById(tabName + '-tab').classList.add('active');
-      event.target.classList.add('active');
-    }
-
-    // Password confirmation validation
-    document.getElementById('confirmPassword')?.addEventListener('input', function() {
-      const newPass = document.getElementById('newPassword').value;
-      const confirmPass = this.value;
-      if (newPass !== confirmPass) {
-        this.setCustomValidity('كلمات المرور غير متطابقة');
-      } else {
-        this.setCustomValidity('');
-      }
-    });
-  </script>
 </body>
 </html>

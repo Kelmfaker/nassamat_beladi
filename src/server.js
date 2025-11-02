@@ -53,6 +53,7 @@ app.use("/admin/products", productRoutes);
 app.use("/orders", orderRoutes);
 app.use("/admin/orders", orderRoutes);
 app.use("/cart", cartRoutes);
+app.use('/products', require('./routes/product.routes'));
 
 // Home route (single response)
 app.get("/", async (req, res, next) => {

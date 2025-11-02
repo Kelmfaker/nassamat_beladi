@@ -3,93 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>طلباتي</title>
+  <title>طلباتي - نسمات بلادي</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <%- include("../partials/header") %>
 
-  <main class="profile-content">
-    <div class="profile-container">
-      <h1><i class="fas fa-shopping-bag"></i> طلباتي</h1>
+  <main class="orders-content">
+    <div class="orders-container">
+      <div class="orders-header">
+        <h1>
+          <i class="fas fa-shopping-bag"></i>
+          طلباتي
+        </h1>
+        <p>تتبع وإدارة جميع طلباتك</p>
+      </div>
 
       <% if (orders && orders.length > 0) { %>
         <div class="orders-list">
           <% orders.forEach(order => { %>
             <div class="order-card">
-              <div class="order-header">
-                <div>
-                  <h3>طلب رقم: <%= order.orderNumber %></h3>
-                  <p class="order-date">
-                    <i class="fas fa-calendar"></i>
-                    <%= new Date(order.createdAt).toLocaleDateString('ar-DZ', { 
-                      year: 'numeric', month: 'long', day: 'numeric' 
+              <div class="order-card-header">
+                <div class="order-info-item">
+                  <span class="order-info-label">
+                    <i class="fas fa-hashtag"></i>
+                    رقم الطلب
+                  </span>
+                  <span class="order-info-value order-number">#<%= order.orderNumber %></span>
+                </div>
+                <div class="order-info-item">
+                  <span class="order-info-label">
+                    <i class="fas fa-calendar-alt"></i>
+                    التاريخ
+                  </span>
+                  <span class="order-info-value order-date">
+                    <%= new Date(order.createdAt).toLocaleDateString('ar-MA', { 
+                      year: 'numeric', month: 'short', day: 'numeric'
                     }) %>
-                  </p>
+                  </span>
                 </div>
-                <span class="badge badge-<%= order.status %> badge-lg">
-                  <%= order.status === 'pending' ? 'قيد الانتظار' :
-                      order.status === 'confirmed' ? 'مؤكد' :
-                      order.status === 'processing' ? 'قيد التحضير' :
-                      order.status === 'shipped' ? 'قيد الشحن' :
-                      order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
-                </span>
+                <div class="order-info-item">
+                  <span class="order-info-label">
+                    <i class="fas fa-info-circle"></i>
+                    الحالة
+                  </span>
+                  <span class="badge badge-<%= order.status %>">
+                    <%= order.status === 'pending' ? 'قيد الانتظار' :
+                        order.status === 'confirmed' ? 'مؤكد' :
+                        order.status === 'processing' ? 'قيد التحضير' :
+                        order.status === 'shipped' ? 'قيد الشحن' :
+                        order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
+                  </span>
+                </div>
               </div>
 
-              <div class="order-items">
-                <% order.items.slice(0, 3).forEach(item => { %>
-                  <div class="order-item-mini">
-                    <img src="<%= item.image || '/images/default-product.jpg' %>" alt="<%= item.name %>">
-                    <span><%= item.name %> × <%= item.quantity %></span>
-                  </div>
-                <% }) %>
-                <% if (order.items.length > 3) { %>
-                  <p class="text-muted">+<%= order.items.length - 3 %> منتجات أخرى</p>
-                <% } %>
-              </div>
-
-              <div class="order-footer">
-                <div class="order-total">
-                  المجموع: <strong><%= order.totalAmount.toFixed(2) %> دج</strong>
-                </div>
-                <div class="order-actions">
-                  <a href="/orders/<%= order._id %>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-eye"></i> التفاصيل
-                  </a>
-                  <% if (order.status === 'pending' || order.status === 'confirmed') { %>
-                    <button onclick="cancelOrder('<%= order._id %>')" class="btn btn-delete btn-sm">
-                      <i class="fas fa-times"></i> إلغاء
-                    </button>
+              <div class="order-card-body">
+                <div class="order-items-preview">
+                  <% const maxVisible = 6; %>
+                  <% order.items.slice(0, maxVisible).forEach(item => { %>
+                    <div class="order-item-thumb">
+                      <img src="<%= item.image || '/images/default-product.jpg' %>" alt="<%= item.name %>">
+                      <span class="item-qty">×<%= item.quantity %></span>
+                    </div>
+                  <% }) %>
+                  <% if (order.items.length > maxVisible) { %>
+                    <div class="order-more-items">
+                      +<%= order.items.length - maxVisible %>
+                    </div>
                   <% } %>
+                </div>
+
+                <% if (order.status !== 'cancelled' && order.status !== 'delivered') { %>
+                  <div class="order-timeline">
+                    <div class="timeline-title">
+                      <i class="fas fa-route"></i>
+                      تتبع الطلب
+                    </div>
+                    <div class="timeline-steps">
+                      <div class="timeline-step <%= ['pending', 'confirmed', 'processing', 'shipped', 'delivered'].includes(order.status) ? 'completed' : '' %> <%= order.status === 'pending' ? 'active' : '' %>">
+                        <div class="timeline-step-icon">
+                          <i class="fas fa-clock"></i>
+                        </div>
+                        <span class="timeline-step-label">تم الطلب</span>
+                      </div>
+                      <div class="timeline-step <%= ['confirmed', 'processing', 'shipped', 'delivered'].includes(order.status) ? 'completed' : '' %> <%= order.status === 'confirmed' ? 'active' : '' %>">
+                        <div class="timeline-step-icon">
+                          <i class="fas fa-check-circle"></i>
+                        </div>
+                        <span class="timeline-step-label">مؤكد</span>
+                      </div>
+                      <div class="timeline-step <%= ['processing', 'shipped', 'delivered'].includes(order.status) ? 'completed' : '' %> <%= order.status === 'processing' ? 'active' : '' %>">
+                        <div class="timeline-step-icon">
+                          <i class="fas fa-box"></i>
+                        </div>
+                        <span class="timeline-step-label">قيد التحضير</span>
+                      </div>
+                      <div class="timeline-step <%= ['shipped', 'delivered'].includes(order.status) ? 'completed' : '' %> <%= order.status === 'shipped' ? 'active' : '' %>">
+                        <div class="timeline-step-icon">
+                          <i class="fas fa-truck"></i>
+                        </div>
+                        <span class="timeline-step-label">قيد الشحن</span>
+                      </div>
+                      <div class="timeline-step <%= order.status === 'delivered' ? 'completed active' : '' %>">
+                        <div class="timeline-step-icon">
+                          <i class="fas fa-home"></i>
+                        </div>
+                        <span class="timeline-step-label">تم التوصيل</span>
+                      </div>
+                    </div>
+                  </div>
+                <% } %>
+
+                <div class="order-card-footer">
+                  <div class="order-total">
+                    <span class="order-total-label">المجموع الكلي</span>
+                    <span class="order-total-amount">
+                      <%= order.totalAmount.toFixed(2) %> درهم
+                    </span>
+                  </div>
+                  <div class="order-actions">
+                    <a href="/orders/<%= order._id %>" class="btn-view-order">
+                      <i class="fas fa-eye"></i>
+                      التفاصيل
+                    </a>
+                    <% if (order.status === 'pending' || order.status === 'confirmed') { %>
+                      <form method="POST" action="/orders/<%= order._id %>/cancel" style="display: inline;">
+                        <button type="submit" class="btn-cancel-order" onclick="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
+                          <i class="fas fa-times-circle"></i>
+                          إلغاء الطلب
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
                 </div>
               </div>
             </div>
           <% }) %>
         </div>
       <% } else { %>
-        <div class="empty-state">
+        <div class="orders-empty">
           <i class="fas fa-shopping-bag"></i>
           <h2>لا توجد طلبات بعد</h2>
-          <p>ابدأ التسوق الآن واكتشف منتجاتنا</p>
-          <a href="/" class="btn btn-primary">تصفح المنتجات</a>
+          <p>لم تقم بإنشاء أي طلبات حتى الآن.<br>ابدأ التسوق الآن واكتشف منتجاتنا المميزة!</p>
+          <a href="/" class="btn-start-shopping">
+            <i class="fas fa-shopping-cart"></i>
+            ابدأ التسوق
+          </a>
         </div>
       <% } %>
     </div>
   </main>
 
   <%- include("../partials/footer") %>
-
-  <script>
-    function cancelOrder(orderId) {
-      if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/orders/${orderId}/cancel`;
-        document.body.appendChild(form);
-        form.submit();
-      }
-    }
-  </script>
 </body>
 </html>

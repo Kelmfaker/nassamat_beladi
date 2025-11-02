@@ -1,67 +1,96 @@
 const express = require('express');
 const router = express.Router();
-const { protect, isAdmin } = require('../middleware/auth.middleware');
 const Product = require('../models/product');
 const Category = require('../models/category');
 
-// List products (admin UI)
-router.get('/', protect, isAdmin, async (req, res) => {
+// GET /products - List all products with pagination and filtering
+router.get('/', async (req, res, next) => {
   try {
-    const products = await Product.find().populate('category').sort({ createdAt: -1 }).lean();
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12; // Products per page
+    const skip = (page - 1) * limit;
+
+    // Get category filter if exists
+    const categoryFilter = req.query.category && req.query.category !== 'all' 
+      ? { category: req.query.category } 
+      : {};
+
+    // Get search query if exists
+    const searchQuery = req.query.q 
+      ? { name: { $regex: req.query.q, $options: 'i' } } 
+      : {};
+
+    // Combine filters
+    const filter = { ...categoryFilter, ...searchQuery };
+
+    // Sorting
+    let sort = { createdAt: -1 }; // Default: newest first
+    if (req.query.sort === 'price_asc') sort = { price: 1 };
+    if (req.query.sort === 'price_desc') sort = { price: -1 };
+    if (req.query.sort === 'name') sort = { name: 1 };
+
+    // Get total count for pagination
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    // Get products
+    const products = await Product.find(filter)
+      .populate('category', 'name')
+      .sort(sort)
+      .limit(limit)
+      .skip(skip)
+      .lean();
+
+    // Get all categories for filter chips
     const categories = await Category.find().lean();
-    return res.render('admin/products', { products, categories, user: req.user });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send('Error loading products');
-  }
-});
 
-// Create product
-router.post('/', protect, isAdmin, async (req, res) => {
-  try {
-    const { name, description, price, category, image, stock } = req.body;
-    await Product.create({ 
-      name, 
-      description, 
-      price: parseFloat(price), 
-      category, 
-      image,
-      stock: parseInt(stock) || 0
+    // Render the products page
+    res.render('products', {
+      products,
+      categories,
+      currentPage: page,
+      totalPages,
+      totalProducts,
+      user: req.user || null
     });
-    return res.redirect('/admin/products');
-  } catch (err) {
-    console.error(err);
-    return res.status(400).send('Error creating product');
+
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    next(error);
   }
 });
 
-// Update product
-router.post('/:id', protect, isAdmin, async (req, res) => {
+// GET /products/:id - Single product detail page
+router.get('/:id', async (req, res, next) => {
   try {
-    const { name, description, price, category, image, stock } = req.body;
-    await Product.findByIdAndUpdate(req.params.id, { 
-      name, 
-      description, 
-      price: parseFloat(price), 
-      category, 
-      image,
-      stock: parseInt(stock) || 0
+    const product = await Product.findById(req.params.id)
+      .populate('category', 'name')
+      .lean();
+
+    if (!product) {
+      return res.status(404).render('error', { 
+        message: 'المنتج غير موجود',
+        user: req.user || null 
+      });
+    }
+
+    // Get related products from same category
+    const relatedProducts = await Product.find({
+      category: product.category._id,
+      _id: { $ne: product._id }
+    })
+    .limit(4)
+    .lean();
+
+    res.render('product-detail', {
+      product,
+      relatedProducts,
+      user: req.user || null
     });
-    return res.redirect('/admin/products');
-  } catch (err) {
-    console.error(err);
-    return res.status(400).send('Error updating product');
-  }
-});
 
-// Delete product
-router.post('/:id/delete', protect, isAdmin, async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
-    return res.redirect('/admin/products');
-  } catch (err) {
-    console.error(err);
-    return res.status(400).send('Error deleting product');
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    next(error);
   }
 });
 
