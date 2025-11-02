@@ -14,17 +14,37 @@ router.post('/checkout', protect, async (req, res) => {
   try {
     const { items, shippingAddress, paymentMethod, notes } = req.body;
     
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: 'السلة فارغة' });
+    console.log('Received order data:', { items, shippingAddress, paymentMethod });
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, error: 'السلة فارغة' });
     }
 
-    // Calculate total
+    if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone || 
+        !shippingAddress.wilaya || !shippingAddress.city || !shippingAddress.address) {
+      return res.status(400).json({ success: false, error: 'يرجى تعبئة جميع بيانات الشحن المطلوبة' });
+    }
+
+    // Calculate total and prepare order items
     let totalAmount = 0;
     const orderItems = [];
 
     for (const item of items) {
       const product = await Product.findById(item.productId);
-      if (!product) continue;
+      
+      if (!product) {
+        return res.status(400).json({ 
+          success: false, 
+          error: `المنتج غير موجود: ${item.productId}` 
+        });
+      }
+
+      if (product.stock < item.quantity) {
+        return res.status(400).json({ 
+          success: false, 
+          error: `المنتج "${product.name}" غير متوفر بالكمية المطلوبة` 
+        });
+      }
 
       orderItems.push({
         product: product._id,
@@ -44,20 +64,30 @@ router.post('/checkout', protect, async (req, res) => {
       totalAmount,
       paymentMethod: paymentMethod || 'cash',
       shippingAddress: {
-        fullName: shippingAddress.fullName || req.user.name,
+        fullName: shippingAddress.fullName,
         phone: shippingAddress.phone,
         address: shippingAddress.address,
         city: shippingAddress.city,
         wilaya: shippingAddress.wilaya,
-        postalCode: shippingAddress.postalCode
+        postalCode: shippingAddress.postalCode || ''
       },
-      notes
+      notes: notes || ''
     });
 
-    return res.json({ success: true, orderId: order._id, orderNumber: order.orderNumber });
+    console.log('Order created successfully:', order._id);
+
+    return res.json({ 
+      success: true, 
+      orderId: order._id, 
+      orderNumber: order.orderNumber 
+    });
+
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'خطأ في إنشاء الطلب' });
+    console.error('Checkout error:', err);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'خطأ في إنشاء الطلب: ' + err.message 
+    });
   }
 });
 
@@ -92,7 +122,8 @@ router.get('/:id', protect, async (req, res) => {
       return res.status(403).send('Forbidden');
     }
 
-    return res.render('user/order-detail', { order, user: req.user });
+    const success = req.query.success === 'true';
+    return res.render('user/order-detail', { order, user: req.user, success });
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error loading order');
@@ -154,7 +185,7 @@ router.post('/:id/status', protect, isAdmin, async (req, res) => {
     }
 
     await Order.findByIdAndUpdate(req.params.id, updateData);
-    return res.redirect('/admin/orders');
+    return res.redirect('/orders/admin/all');
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error updating order');
@@ -165,7 +196,7 @@ router.post('/:id/status', protect, isAdmin, async (req, res) => {
 router.post('/:id/delete', protect, isAdmin, async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
-    return res.redirect('/admin/orders');
+    return res.redirect('/orders/admin/all');
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error deleting order');

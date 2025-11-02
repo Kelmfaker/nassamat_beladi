@@ -4,7 +4,6 @@ const orderSchema = new mongoose.Schema(
   {
     orderNumber: { 
       type: String, 
-      required: true, 
       unique: true 
     },
     user: { 
@@ -62,9 +61,16 @@ const orderSchema = new mongoose.Schema(
 
 // Generate order number before saving
 orderSchema.pre("save", async function (next) {
-  if (!this.orderNumber) {
-    const count = await mongoose.model("Order").countDocuments();
-    this.orderNumber = `ORD-${Date.now()}-${count + 1}`;
+  if (this.isNew && !this.orderNumber) {
+    try {
+      const count = await mongoose.model("Order").countDocuments();
+      const timestamp = Date.now();
+      this.orderNumber = `ORD-${timestamp}-${count + 1}`;
+      console.log('Generated order number:', this.orderNumber);
+    } catch (error) {
+      console.error('Error generating order number:', error);
+      return next(error);
+    }
   }
   next();
 });

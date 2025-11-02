@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إتمام الطلب</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("../partials/header") %>
+
+  <main class="checkout-content">
+    <div class="checkout-container">
+      <h1><i class="fas fa-shopping-bag"></i> إتمام الطلب</h1>
+
+      <div class="checkout-grid">
+        <!-- Shipping & Payment Form -->
+        <div class="checkout-form-section">
+          <form id="checkout-form" class="checkout-form">
+            <!-- Shipping Address -->
+            <div class="form-card">
+              <h2><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h2>
+              
+              <div class="form-group">
+                <label for="fullName">الاسم الكامل *</label>
+                <input type="text" id="fullName" name="fullName" value="<%= user.name %>" required>
+              </div>
+
+              <div class="form-group">
+                <label for="phone">رقم الهاتف *</label>
+                <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>" placeholder="0600000000" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="wilaya">المدينة / الجهة *</label>
+                  <select id="wilaya" name="wilaya" required>
+                    <option value="">اختر المدينة</option>
+                    <optgroup label="الجهات الرئيسية">
+                      <option value="الدار البيضاء-سطات">الدار البيضاء-سطات</option>
+                      <option value="الرباط-سلا-القنيطرة">الرباط-سلا-القنيطرة</option>
+                      <option value="فاس-مكناس">فاس-مكناس</option>
+                      <option value="مراكش-آسفي">مراكش-آسفي</option>
+                      <option value="طنجة-تطوان-الحسيمة">طنجة-تطوان-الحسيمة</option>
+                      <option value="الشرق">الشرق</option>
+                      <option value="بني ملال-خنيفرة">بني ملال-خنيفرة</option>
+                      <option value="درعة-تافيلالت">درعة-تافيلالت</option>
+                      <option value="سوس-ماسة">سوس-ماسة</option>
+                      <option value="كلميم-واد نون">كلميم-واد نون</option>
+                      <option value="العيون-الساقية الحمراء">العيون-الساقية الحمراء</option>
+                      <option value="الداخلة-وادي الذهب">الداخلة-وادي الذهب</option>
+                    </optgroup>
+                    <optgroup label="المدن الكبرى">
+                      <option value="الدار البيضاء">الدار البيضاء</option>
+                      <option value="الرباط">الرباط</option>
+                      <option value="فاس">فاس</option>
+                      <option value="مراكش">مراكش</option>
+                      <option value="طنجة">طنجة</option>
+                      <option value="أكادير">أكادير</option>
+                      <option value="مكناس">مكناس</option>
+                      <option value="وجدة">وجدة</option>
+                      <option value="القنيطرة">القنيطرة</option>
+                      <option value="تطوان">تطوان</option>
+                      <option value="سلا">سلا</option>
+                      <option value="المحمدية">المحمدية</option>
+                      <option value="بني ملال">بني ملال</option>
+                      <option value="الجديدة">الجديدة</option>
+                      <option value="تازة">تازة</option>
+                      <option value="آسفي">آسفي</option>
+                      <option value="الناظور">الناظور</option>
+                      <option value="خريبكة">خريبكة</option>
+                      <option value="العرائش">العرائش</option>
+                      <option value="ورزازات">ورزازات</option>
+                      <option value="سطات">سطات</option>
+                      <option value="بركان">بركان</option>
+                      <option value="الحسيمة">الحسيمة</option>
+                      <option value="تاوريرت">تاوريرت</option>
+                      <option value="إفران">إفران</option>
+                      <option value="الصويرة">الصويرة</option>
+                      <option value="الراشيدية">الراشيدية</option>
+                      <option value="خنيفرة">خنيفرة</option>
+                      <option value="القصر الكبير">القصر الكبير</option>
+                      <option value="سيدي قاسم">سيدي قاسم</option>
+                      <option value="تيفلت">تيفلت</option>
+                      <option value="شفشاون">شفشاون</option>
+                      <option value="الفقيه بن صالح">الفقيه بن صالح</option>
+                      <option value="قلعة السراغنة">قلعة السراغنة</option>
+                      <option value="أزرو">أزرو</option>
+                      <option value="ميدلت">ميدلت</option>
+                      <option value="زاكورة">زاكورة</option>
+                      <option value="تنغير">تنغير</option>
+                      <option value="تارودانت">تارودانت</option>
+                      <option value="تيزنيت">تيزنيت</option>
+                      <option value="كلميم">كلميم</option>
+                      <option value="طانطان">طانطان</option>
+                      <option value="العيون">العيون</option>
+                      <option value="الداخلة">الداخلة</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="city">الحي / المنطقة *</label>
+                  <input type="text" id="city" name="city" placeholder="اسم الحي أو المنطقة" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="address">العنوان بالتفصيل *</label>
+                <textarea id="address" name="address" rows="3" placeholder="رقم المنزل، اسم الشارع، الزنقة..." required><%= user.address || '' %></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="postalCode">الرمز البريدي (اختياري)</label>
+                <input type="text" id="postalCode" name="postalCode" placeholder="20000">
+              </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-card">
+              <h2><i class="fas fa-credit-card"></i> طريقة الدفع</h2>
+              
+              <div class="payment-methods">
+                <label class="payment-option">
+                  <input type="radio" name="paymentMethod" value="cash" checked>
+                  <div class="payment-card">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>الدفع عند الاستلام</span>
+                    <small>ادفع نقداً عند استلام الطلب</small>
+                  </div>
+                </label>
+
+                <label class="payment-option">
+                  <input type="radio" name="paymentMethod" value="card">
+                  <div class="payment-card">
+                    <i class="fas fa-credit-card"></i>
+                    <span>بطاقة بنكية</span>
+                    <small>الدفع الإلكتروني (قريباً)</small>
+                  </div>
+                </label>
+
+                <label class="payment-option">
+                  <input type="radio" name="paymentMethod" value="bank_transfer">
+                  <div class="payment-card">
+                    <i class="fas fa-university"></i>
+                    <span>تحويل بنكي</span>
+                    <small>تحويل مباشر إلى حسابنا البنكي</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-card">
+              <h2><i class="fas fa-comment"></i> ملاحظات إضافية (اختياري)</h2>
+              <div class="form-group">
+                <textarea id="notes" name="notes" rows="3" placeholder="أي تعليمات خاصة للتوصيل..."></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-submit" id="submit-btn">
+              <i class="fas fa-check-circle"></i> تأكيد الطلب
+            </button>
+          </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary-section">
+          <div class="summary-card sticky">
+            <h2><i class="fas fa-receipt"></i> ملخص الطلب</h2>
+            
+            <div id="summary-items" class="summary-items">
+              <!-- Will be populated by JavaScript -->
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-totals">
+              <div class="summary-row">
+                <span>المجموع الفرعي:</span>
+                <span id="summary-subtotal">0 درهم</span>
+              </div>
+              
+              <div class="summary-row">
+                <span>الشحن:</span>
+                <span id="summary-shipping" class="text-success">مجاني</span>
+              </div>
+              
+              <div class="summary-row summary-total">
+                <span>المجموع الكلي:</span>
+                <span id="summary-total">0 درهم</span>
+              </div>
+            </div>
+
+            <div class="summary-note">
+              <i class="fas fa-info-circle"></i>
+              <p>سيتم التواصل معك لتأكيد الطلب خلال 24 ساعة</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include("../partials/footer") %>
+
+  <script>
+    let cart = [];
+
+    // Load cart and render summary
+    function loadCheckout() {
+      const stored = localStorage.getItem('cart');
+      cart = stored ? JSON.parse(stored) : [];
+
+      if (cart.length === 0) {
+        alert('السلة فارغة');
+        window.location.href = '/';
+        return;
+      }
+
+      renderOrderSummary();
+    }
+
+    function renderOrderSummary() {
+      const container = document.getElementById('summary-items');
+      
+      container.innerHTML = cart.map(item => `
+        <div class="summary-item">
+          <img src="${item.image || '/images/default-product.jpg'}" alt="${item.name}">
+          <div class="summary-item-details">
+            <h4>${item.name}</h4>
+            <p class="quantity">الكمية: ${item.quantity}</p>
+            <p class="price">${(item.price * item.quantity).toFixed(2)} درهم</p>
+          </div>
+        </div>
+      `).join('');
+
+      updateTotals();
+    }
+
+    function updateTotals() {
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const shipping = 0; // Free shipping
+      const total = subtotal + shipping;
+
+      document.getElementById('summary-subtotal').textContent = subtotal.toFixed(2) + ' درهم';
+      document.getElementById('summary-total').textContent = total.toFixed(2) + ' درهم';
+    }
+
+    // Handle form submission
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري معالجة الطلب...';
+
+      const formData = new FormData(e.target);
+      const shippingAddress = {
+        fullName: formData.get('fullName'),
+        phone: formData.get('phone'),
+        wilaya: formData.get('wilaya'),
+        city: formData.get('city'),
+        address: formData.get('address'),
+        postalCode: formData.get('postalCode')
+      };
+
+      const orderData = {
+        items: cart.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity
+        })),
+        shippingAddress,
+        paymentMethod: formData.get('paymentMethod'),
+        notes: formData.get('notes')
+      };
+
+      try {
+        const response = await fetch('/orders/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Clear cart
+          localStorage.removeItem('cart');
+          
+          // Redirect to order confirmation
+          window.location.href = `/orders/${result.orderId}?success=true`;
+        } else {
+          throw new Error(result.error || 'فشل إنشاء الطلب');
+        }
+      } catch (error) {
+        alert('حدث خطأ: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الطلب';
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCheckout);
+  </script>
+</body>
+</html>

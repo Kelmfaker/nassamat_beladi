@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>سلة التسوق</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <% if (user && user.role === 'admin') { %>
+    <%- include("partials/admin-header") %>
+  <% } else { %>
+    <%- include("partials/header") %>
+  <% } %>
+
+  <main class="cart-content">
+    <div class="cart-container">
+      <h1><i class="fas fa-shopping-cart"></i> سلة التسوق</h1>
+
+      <!-- Empty cart message -->
+      <div id="empty-cart" class="empty-state" style="display:none;">
+        <i class="fas fa-shopping-cart"></i>
+        <h2>سلة التسوق فارغة</h2>
+        <p>لم تقم بإضافة أي منتجات بعد</p>
+        <a href="/" class="btn btn-primary">تصفح المنتجات</a>
+      </div>
+
+      <!-- Cart items -->
+      <div id="cart-items" class="cart-items">
+        <!-- Will be populated by JavaScript -->
+      </div>
+
+      <!-- Cart summary -->
+      <div id="cart-summary" class="cart-summary" style="display:none;">
+        <div class="summary-card">
+          <h2>ملخص الطلب</h2>
+          
+          <div class="summary-row">
+            <span>المجموع الفرعي:</span>
+            <span id="subtotal">0 دج</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>الشحن:</span>
+            <span id="shipping">مجاني</span>
+          </div>
+          
+          <div class="summary-row total">
+            <span>المجموع الكلي:</span>
+            <span id="total">0 دج</span>
+          </div>
+
+          <% if (user) { %>
+            <button onclick="proceedToCheckout()" class="btn btn-primary btn-block">
+              <i class="fas fa-credit-card"></i> إتمام الطلب
+            </button>
+          <% } else { %>
+            <a href="/auth/login?redirect=/cart" class="btn btn-primary btn-block">
+              <i class="fas fa-sign-in-alt"></i> سجل الدخول لإتمام الطلب
+            </a>
+          <% } %>
+          
+          <a href="/" class="btn btn-secondary btn-block">
+            <i class="fas fa-arrow-right"></i> متابعة التسوق
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include("partials/footer") %>
+
+  <script>
+    let cart = [];
+
+    // Load cart from localStorage
+    function loadCart() {
+      const stored = localStorage.getItem('cart');
+      
+      try {
+        cart = stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        console.error('Error parsing cart:', error);
+        cart = [];
+        localStorage.removeItem('cart');
+      }
+      
+      if (!cart || !Array.isArray(cart) || cart.length === 0) {
+        showEmptyCart();
+        return;
+      }
+
+      // Validate cart items with server
+      fetch('/cart/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cart })
+      })
+      .then(r => {
+        if (!r.ok) throw new Error('Server error');
+        return r.json();
+      })
+      .then(data => {
+        if (data.valid && data.items && data.items.length > 0) {
+          // Update cart with validated data
+          cart = data.items;
+          saveCart();
+          renderCart();
+        } else {
+          // Clear invalid cart
+          cart = [];
+          localStorage.removeItem('cart');
+          showEmptyCart();
+        }
+      })
+      .catch(err => {
+        console.error('Validation error:', err);
+        // Try to render cached cart on error
+        if (cart.length > 0) {
+          renderCart();
+        } else {
+          showEmptyCart();
+        }
+      });
+    }
+
+    function saveCart() {
+      try {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCount();
+      } catch (error) {
+        console.error('Error saving cart:', error);
+      }
+    }
+
+    function updateCartCount() {
+      try {
+        const total = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+        const countEl = document.getElementById('cart-count');
+        if (countEl) countEl.textContent = total;
+      } catch (error) {
+        console.error('Error updating cart count:', error);
+      }
+    }
+
+    function showEmptyCart() {
+      document.getElementById('empty-cart').style.display = 'block';
+      document.getElementById('cart-items').style.display = 'none';
+      document.getElementById('cart-summary').style.display = 'none';
+      updateCartCount();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      
+      if (!cart || cart.length === 0) {
+        showEmptyCart();
+        return;
+      }
+
+      document.getElementById('empty-cart').style.display = 'none';
+      container.style.display = 'block';
+      document.getElementById('cart-summary').style.display = 'block';
+
+      container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <div class="item-image">
+            <img src="${item.image || '/images/default-product.jpg'}" alt="${item.name || 'منتج'}">
+          </div>
+          <div class="item-details">
+            <h3>${item.name || 'منتج غير معروف'}</h3>
+            ${item.category ? `<p class="item-category">${item.category}</p>` : ''}
+            <p class="item-price">${parseFloat(item.price || 0).toFixed(2)} دج</p>
+            ${!item.available ? '<p class="item-error">غير متوفر بالكمية المطلوبة</p>' : ''}
+          </div>
+          <div class="item-quantity">
+            <button onclick="updateQuantity('${item.productId}', -1)" class="qty-btn">
+              <i class="fas fa-minus"></i>
+            </button>
+            <input type="number" value="${item.quantity || 1}" min="1" max="${item.stock || 99}" 
+                   onchange="setQuantity('${item.productId}', this.value)" class="qty-input">
+            <button onclick="updateQuantity('${item.productId}', 1)" class="qty-btn">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+          <div class="item-total">
+            <p>${(parseFloat(item.price || 0) * parseInt(item.quantity || 1)).toFixed(2)} دج</p>
+          </div>
+          <div class="item-remove">
+            <button onclick="removeItem('${item.productId}')" class="btn-remove">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      updateSummary();
+    }
+
+    function updateQuantity(productId, delta) {
+      const item = cart.find(i => i.productId === productId);
+      if (!item) return;
+
+      const newQty = parseInt(item.quantity || 1) + delta;
+      if (newQty < 1) {
+        removeItem(productId);
+        return;
+      }
+
+      const maxStock = parseInt(item.stock) || 99;
+      item.quantity = Math.min(newQty, maxStock);
+      
+      saveCart();
+      renderCart();
+    }
+
+    function setQuantity(productId, value) {
+      const item = cart.find(i => i.productId === productId);
+      if (!item) return;
+
+      const qty = parseInt(value) || 1;
+      const maxStock = parseInt(item.stock) || 99;
+      item.quantity = Math.max(1, Math.min(qty, maxStock));
+      
+      saveCart();
+      renderCart();
+    }
+
+    function removeItem(productId) {
+      if (confirm('هل تريد حذف هذا المنتج من السلة؟')) {
+        cart = cart.filter(i => i.productId !== productId);
+        saveCart();
+        renderCart();
+      }
+    }
+
+    function updateSummary() {
+      const subtotal = cart.reduce((sum, item) => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.quantity) || 1;
+        return sum + (price * qty);
+      }, 0);
+      
+      const shipping = 0; // Free shipping
+      const total = subtotal + shipping;
+
+      document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' دج';
+      document.getElementById('total').textContent = total.toFixed(2) + ' دج';
+    }
+
+    function proceedToCheckout() {
+      if (!cart || cart.length === 0) {
+        alert('السلة فارغة');
+        return;
+      }
+
+      // Check availability
+      const unavailable = cart.filter(item => !item.available);
+      if (unavailable.length > 0) {
+        alert('بعض المنتجات غير متوفرة بالكمية المطلوبة');
+        return;
+      }
+
+      // Redirect to checkout
+      window.location.href = '/orders/checkout';
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadCart);
+  </script>
+</body>
+</html>

@@ -27,6 +27,7 @@ const couponRoutes = require("./routes/coupon.routes");
 const orderRoutes = require("./routes/order.routes");
 const reviewRoutes = require("./routes/review.routes");
 const authRoutes = require("./routes/auth.routes");
+const cartRoutes = require("./routes/cart.routes");
 
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/admin/categories", categoryRoutes);
 app.use("/admin/products", productRoutes);
 app.use("/orders", orderRoutes);
 app.use("/admin/orders", orderRoutes);
+app.use("/cart", cartRoutes);
 
 // Home route (single response)
 app.get("/", async (req, res, next) => {
