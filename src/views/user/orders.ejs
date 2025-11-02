@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>طلباتي</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("../partials/header") %>
+
+  <main class="profile-content">
+    <div class="profile-container">
+      <h1><i class="fas fa-shopping-bag"></i> طلباتي</h1>
+
+      <% if (orders && orders.length > 0) { %>
+        <div class="orders-list">
+          <% orders.forEach(order => { %>
+            <div class="order-card">
+              <div class="order-header">
+                <div>
+                  <h3>طلب رقم: <%= order.orderNumber %></h3>
+                  <p class="order-date">
+                    <i class="fas fa-calendar"></i>
+                    <%= new Date(order.createdAt).toLocaleDateString('ar-DZ', { 
+                      year: 'numeric', month: 'long', day: 'numeric' 
+                    }) %>
+                  </p>
+                </div>
+                <span class="badge badge-<%= order.status %> badge-lg">
+                  <%= order.status === 'pending' ? 'قيد الانتظار' :
+                      order.status === 'confirmed' ? 'مؤكد' :
+                      order.status === 'processing' ? 'قيد التحضير' :
+                      order.status === 'shipped' ? 'قيد الشحن' :
+                      order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
+                </span>
+              </div>
+
+              <div class="order-items">
+                <% order.items.slice(0, 3).forEach(item => { %>
+                  <div class="order-item-mini">
+                    <img src="<%= item.image || '/images/default-product.jpg' %>" alt="<%= item.name %>">
+                    <span><%= item.name %> × <%= item.quantity %></span>
+                  </div>
+                <% }) %>
+                <% if (order.items.length > 3) { %>
+                  <p class="text-muted">+<%= order.items.length - 3 %> منتجات أخرى</p>
+                <% } %>
+              </div>
+
+              <div class="order-footer">
+                <div class="order-total">
+                  المجموع: <strong><%= order.totalAmount.toFixed(2) %> دج</strong>
+                </div>
+                <div class="order-actions">
+                  <a href="/orders/<%= order._id %>" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> التفاصيل
+                  </a>
+                  <% if (order.status === 'pending' || order.status === 'confirmed') { %>
+                    <button onclick="cancelOrder('<%= order._id %>')" class="btn btn-delete btn-sm">
+                      <i class="fas fa-times"></i> إلغاء
+                    </button>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <i class="fas fa-shopping-bag"></i>
+          <h2>لا توجد طلبات بعد</h2>
+          <p>ابدأ التسوق الآن واكتشف منتجاتنا</p>
+          <a href="/" class="btn btn-primary">تصفح المنتجات</a>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <%- include("../partials/footer") %>
+
+  <script>
+    function cancelOrder(orderId) {
+      if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/orders/${orderId}/cancel`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+</body>
+</html>

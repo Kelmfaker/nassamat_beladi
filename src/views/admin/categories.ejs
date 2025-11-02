@@ -47,7 +47,7 @@
                   <td><%= category.name %></td>
                   <td><%= category.description || '-' %></td>
                   <td class="actions">
-                    <button onclick="editCategory('<%= category._id %>', '<%= category.name %>', '<%= category.description || '' %>')" class="btn btn-edit">تعديل</button>
+                    <button onclick='editCategory(<%- JSON.stringify(String(category._id)) %>, <%- JSON.stringify(category.name || '') %>, <%- JSON.stringify(category.description || '') %>)' class="btn btn-edit">تعديل</button>
                     <form action="/admin/categories/<%= category._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
                       <button type="submit" class="btn btn-delete">حذف</button>
                     </form>

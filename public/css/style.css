@@ -1368,3 +1368,143 @@ tbody td button {
     padding: 1.5rem;
   }
 }
+
+/* Order status badges */
+.badge-pending { background: #ffc107; color: #000; }
+.badge-confirmed { background: #17a2b8; color: white; }
+.badge-processing { background: #007bff; color: white; }
+.badge-shipped { background: #6f42c1; color: white; }
+.badge-delivered { background: #28a745; color: white; }
+.badge-cancelled { background: #dc3545; color: white; }
+
+.badge-payment-paid { background: #28a745; color: white; }
+.badge-payment-pending { background: #ffc107; color: #000; }
+.badge-payment-failed { background: #dc3545; color: white; }
+
+.badge-lg {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+/* Orders list */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.order-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.order-date {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.order-items {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.order-item-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.order-item-mini img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-total {
+  font-size: 1.1rem;
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.empty-state i {
+  font-size: 5rem;
+  color: #ddd;
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .order-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .order-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .order-actions {
+    justify-content: stretch;
+  }
+
+  .order-actions .btn {
+    flex: 1;
+  }
+}

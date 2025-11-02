@@ -65,16 +65,9 @@ router.post('/profile', protect, async (req, res) => {
   }
 });
 
-// User orders page
+// Remove or update the /orders route since we moved it to order.routes.js
 router.get('/orders', protect, async (req, res) => {
-  try {
-    // You'll implement orders later
-    const orders = []; // await Order.find({ user: req.user._id }).populate('products.product').sort({ createdAt: -1 }).lean();
-    return res.render('user/orders', { orders, user: req.user });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send('Error loading orders');
-  }
+  return res.redirect('/orders/my-orders');
 });
 
 // Admin: List all users (admin only)

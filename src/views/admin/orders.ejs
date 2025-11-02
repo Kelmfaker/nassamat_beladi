@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة الطلبات</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("../partials/admin-header") %>
+
+  <main class="admin-content">
+    <div class="admin-container">
+      <h1>إدارة الطلبات (<%= orders.length %>)</h1>
+
+      <div class="admin-card">
+        <% if (orders && orders.length > 0) { %>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>العميل</th>
+                  <th>المبلغ</th>
+                  <th>الحالة</th>
+                  <th>الدفع</th>
+                  <th>التاريخ</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% orders.forEach(order => { %>
+                  <tr>
+                    <td><strong><%= order.orderNumber %></strong></td>
+                    <td>
+                      <%= order.user?.name %><br>
+                      <small><%= order.user?.phone %></small>
+                    </td>
+                    <td><%= order.totalAmount.toFixed(2) %> دج</td>
+                    <td>
+                      <span class="badge badge-<%= order.status %>">
+                        <%= order.status === 'pending' ? 'قيد الانتظار' :
+                            order.status === 'confirmed' ? 'مؤكد' :
+                            order.status === 'processing' ? 'قيد التحضير' :
+                            order.status === 'shipped' ? 'قيد الشحن' :
+                            order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge badge-payment-<%= order.paymentStatus %>">
+                        <%= order.paymentStatus === 'paid' ? 'مدفوع' : 
+                            order.paymentStatus === 'failed' ? 'فشل' : 'معلق' %>
+                      </span>
+                    </td>
+                    <td><%= new Date(order.createdAt).toLocaleDateString('ar-DZ') %></td>
+                    <td class="actions">
+                      <a href="/orders/<%= order._id %>" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <button onclick="updateStatus('<%= order._id %>', '<%= order.status %>')" class="btn btn-edit btn-sm">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <form action="/orders/<%= order._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">
+                        <button type="submit" class="btn btn-delete btn-sm">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <p class="no-data">لا توجد طلبات حالياً</p>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Update Modal -->
+  <div id="statusModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>تحديث حالة الطلب</h2>
+      <form id="statusForm" method="POST">
+        <div class="form-group">
+          <label for="status">الحالة</label>
+          <select id="status" name="status" required>
+            <option value="pending">قيد الانتظار</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="processing">قيد التحضير</option>
+            <option value="shipped">قيد الشحن</option>
+            <option value="delivered">تم التوصيل</option>
+            <option value="cancelled">ملغى</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="deliveryDate">تاريخ التوصيل المتوقع</label>
+          <input type="date" id="deliveryDate" name="deliveryDate">
+        </div>
+        <button type="submit" class="btn btn-primary">حفظ</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include("../partials/footer") %>
+
+  <script>
+    function updateStatus(orderId, currentStatus) {
+      document.getElementById('statusForm').action = '/orders/' + orderId + '/status';
+      document.getElementById('status').value = currentStatus;
+      document.getElementById('statusModal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('statusModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

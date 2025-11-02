@@ -49,6 +49,8 @@ app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/admin/categories", categoryRoutes);
 app.use("/admin/products", productRoutes);
+app.use("/orders", orderRoutes);
+app.use("/admin/orders", orderRoutes);
 
 // Home route (single response)
 app.get("/", async (req, res, next) => {
