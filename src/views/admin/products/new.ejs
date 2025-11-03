@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>منتج جديد</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include("../../partials/header") %>
+  <main class="products-content">
+    <div class="products-container">
+      <div class="products-header">
+        <h1><i class="fas fa-plus-circle"></i> إضافة منتج</h1>
+      </div>
+
+      <form method="POST" action="/admin/products" enctype="multipart/form-data" class="profile-form" style="max-width:800px;margin:0 auto">
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم المنتج</label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="form-group">
+            <label>السعر</label>
+            <input type="number" name="price" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>الخصم (%)</label>
+            <input type="number" name="discount" min="0" max="90" step="1">
+          </div>
+          <div class="form-group">
+            <label>المخزون</label>
+            <input type="number" name="stock" min="0" step="1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>الفئة</label>
+            <select name="category">
+              <option value="">— اختر —</option>
+              <% (categories||[]).forEach(c => { %>
+                <option value="<%= c._id %>"><%= c.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>جديد؟</label>
+            <input type="checkbox" name="isNew">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الوصف</label>
+          <textarea name="description" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>صورة المنتج</label>
+          <input type="file" name="image" accept="image/*" required>
+        </div>
+
+        <button class="btn btn-save" type="submit"><i class="fas fa-save"></i> حفظ</button>
+      </form>
+    </div>
+  </main>
+  <%- include("../../partials/footer") %>
+</body>
+</html>

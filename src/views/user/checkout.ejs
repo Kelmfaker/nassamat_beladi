@@ -10,13 +10,13 @@
 <body>
   <%- include("../partials/header") %>
 
-  <main class="checkout-content">
-    <div class="checkout-container">
+  <main class="cart-content">
+    <div class="cart-container">
       <h1><i class="fas fa-shopping-bag"></i> إتمام الطلب</h1>
 
       <div class="checkout-grid">
         <!-- Shipping & Payment Form -->
-        <div class="checkout-form-section">
+        <div id="cart-items" class="cart-items">
           <form id="checkout-form" class="checkout-form">
             <!-- Shipping Address -->
             <div class="form-card">
@@ -28,8 +28,8 @@
               </div>
 
               <div class="form-group">
-                <label for="phone">رقم الهاتف *</label>
-                <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>" placeholder="0600000000" required>
+                <label for="phone" class="phone-label">رقم الهاتف *</label>
+                <input type="tel" id="phone" name="phone" class="phone-input" value="<%= user.phone || '' %>" placeholder="0600000000" required>
               </div>
 
               <div class="form-row">
@@ -149,6 +149,46 @@
                   </div>
                 </label>
               </div>
+
+              <!-- Payment method extra details (card / bank) -->
+              <div class="payment-details">
+                <div class="detail-card card-details hidden">
+                  <h3>معلومات البطاقة</h3>
+                  <div class="form-group">
+                    <label for="cardNumber">رقم البطاقة</label>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456">
+                    <div class="field-error" id="cardNumberError"></div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="cardExpiry">تاريخ الانتهاء (MM/YY)</label>
+                      <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY">
+                      <div class="field-error" id="cardExpiryError"></div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="cardCvv">CVV</label>
+                      <input type="text" id="cardCvv" name="cardCvv" placeholder="123">
+                      <div class="field-error" id="cardCvvError"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="detail-card bank-details hidden">
+                  <h3>تفاصيل التحويل البنكي</h3>
+                  <div class="form-group">
+                    <label for="bankName">اسم البنك</label>
+                    <input type="text" id="bankName" name="bankName" placeholder="مثال: البنك المغربي">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="bankRef">مرجع التحويل / رقم العملية</label>
+                    <input type="text" id="bankRef" name="bankRef" placeholder="رقم المرجع">
+                    <div class="field-error" id="bankRefError"></div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Notes -->
@@ -166,7 +206,7 @@
         </div>
 
         <!-- Order Summary -->
-        <div class="order-summary-section">
+        <div id="cart-summary" class="cart-summary">
           <div class="summary-card sticky">
             <h2><i class="fas fa-receipt"></i> ملخص الطلب</h2>
             
@@ -207,6 +247,118 @@
 
   <script>
     let cart = [];
+
+    // Payment method UI handling
+    function showPaymentDetails(method) {
+      const cardDetails = document.querySelector('.card-details');
+      const bankDetails = document.querySelector('.bank-details');
+
+      // hide all
+      if (cardDetails) cardDetails.classList.add('hidden');
+      if (bankDetails) bankDetails.classList.add('hidden');
+
+      // remove required attrs
+      ['cardNumber','cardExpiry','cardCvv','bankName','bankRef'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.required = false;
+      });
+
+      if (method === 'card') {
+        if (cardDetails) cardDetails.classList.remove('hidden');
+        ['cardNumber','cardExpiry','cardCvv'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.required = true;
+        });
+      } else if (method === 'bank_transfer') {
+        if (bankDetails) bankDetails.classList.remove('hidden');
+        ['bankName','bankRef'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.required = true;
+        });
+      }
+    }
+
+    function initPaymentMethodHandlers() {
+      const radios = document.querySelectorAll('input[name="paymentMethod"]');
+      radios.forEach(r => {
+        r.addEventListener('change', (e) => showPaymentDetails(e.target.value));
+      });
+
+      // initialize default
+      const selected = document.querySelector('input[name="paymentMethod"]:checked');
+      if (selected) showPaymentDetails(selected.value);
+    }
+
+    // Inline error helpers
+    function clearFieldErrors() {
+      document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+    }
+
+    function setFieldError(id, message) {
+      const el = document.getElementById(id + 'Error');
+      if (el) el.textContent = message;
+    }
+
+    // Input masks and formatting
+    function formatCardNumber(e) {
+      const el = e.target;
+      let val = el.value.replace(/\D/g, '').slice(0, 19);
+      // group by 4
+      val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+      el.value = val;
+    }
+
+    function formatExpiry(e) {
+      const el = e.target;
+      let val = el.value.replace(/[^0-9]/g, '').slice(0,4);
+      if (val.length > 2) val = val.slice(0,2) + '/' + val.slice(2);
+      el.value = val;
+    }
+
+    function restrictDigits(e) {
+      const el = e.target;
+      el.value = el.value.replace(/\D/g, '').slice(0,4);
+    }
+
+    // Attach masks inside init
+    function attachMasks() {
+      const cardNumber = document.getElementById('cardNumber');
+      const cardExpiry = document.getElementById('cardExpiry');
+      const cardCvv = document.getElementById('cardCvv');
+
+      if (cardNumber) cardNumber.addEventListener('input', formatCardNumber);
+      if (cardExpiry) cardExpiry.addEventListener('input', formatExpiry);
+      if (cardCvv) cardCvv.addEventListener('input', restrictDigits);
+    }
+
+    function validatePayment() {
+      clearFieldErrors();
+      const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+      if (!method) return false;
+
+      let ok = true;
+      if (method === 'card') {
+        const number = document.getElementById('cardNumber').value.replace(/\s/g, '').trim();
+        const expiry = document.getElementById('cardExpiry').value.trim();
+        const cvv = document.getElementById('cardCvv').value.trim();
+
+        if (number.length < 12) { setFieldError('cardNumber', 'الرجاء إدخال رقم بطاقة صالح'); ok = false; }
+        if (!/^(0[1-9]|1[0-2])\/(\d{2})$/.test(expiry)) { setFieldError('cardExpiry', 'الرجاء إدخال تاريخ بصيغة MM/YY'); ok = false; }
+        if (!/^[0-9]{3,4}$/.test(cvv)) { setFieldError('cardCvv', 'الرجاء إدخال CVV صالح'); ok = false; }
+      }
+
+      if (method === 'bank_transfer') {
+        const bankRef = document.getElementById('bankRef').value.trim();
+        if (bankRef.length < 3) { setFieldError('bankRef', 'الرجاء إدخال مرجع التحويل'); ok = false; }
+      }
+
+      if (!ok) {
+        const first = document.querySelector('.field-error:not(:empty)');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      return ok;
+    }
 
     // Load cart and render summary
     function loadCheckout() {
@@ -251,8 +403,10 @@
     // Handle form submission
     document.getElementById('checkout-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      // validate payment-specific fields
+      if (!validatePayment()) return;
       
-      const submitBtn = document.getElementById('submit-btn');
+  const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري معالجة الطلب...';
 
@@ -302,7 +456,11 @@
     });
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', loadCheckout);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCheckout();
+      initPaymentMethodHandlers();
+      attachMasks();
+    });
   </script>
 </body>
 </html>

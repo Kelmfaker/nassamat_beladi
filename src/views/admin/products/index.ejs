@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة المنتجات</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include("../../partials/header") %>
+  <main class="products-content">
+    <div class="products-container">
+      <div class="products-header">
+        <h1><i class="fas fa-boxes"></i> إدارة المنتجات</h1>
+        <p><a class="chip active" href="/admin/products/new">منتج جديد</a></p>
+      </div>
+      <div class="products-grid">
+        <% products.forEach(p => { %>
+          <article class="product-card">
+            <div class="product-media">
+              <img src="<%= p.image || '/images/default-product.jpg' %>" alt="">
+            </div>
+            <div class="product-body">
+              <h3 class="product-title"><%= p.name %></h3>
+              <div class="product-price">
+                <span class="price-current"><%= Number(p.price).toFixed(2) %> درهم</span>
+              </div>
+              <form method="POST" action="/admin/products/<%= p._id %>" enctype="multipart/form-data" class="product-cta" style="grid-template-columns:1fr">
+                <input type="file" name="image" accept="image/*" required>
+                <button class="btn-add" type="submit"><i class="fas fa-upload"></i> تحديث الصورة</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </main>
+  <%- include("../../partials/footer") %>
+</body>
+</html>
