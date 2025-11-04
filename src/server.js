@@ -79,6 +79,11 @@ app.get("/", async (req, res, next) => {
   }
 });
 
+// Lightweight health-check (does not require DB). Useful for Vercel readiness checks.
+app.get('/_health', (req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development' });
+});
+
 // 404 (no next here)
 app.use((req, res) => {
   if (res.headersSent) return;

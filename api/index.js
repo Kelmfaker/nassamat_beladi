@@ -7,7 +7,16 @@ let ready = false;
 
 module.exports = async (req, res) => {
   try {
+    // Quick health-check: respond without connecting to DB to allow fast liveness checks
+    if (req.method === 'GET' && req.url && req.url.startsWith('/_health')) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ ok: true, env: process.env.NODE_ENV || 'development' }));
+      return;
+    }
+
     if (!ready) {
+      // connectDB throws a descriptive error if MONGO_URI is missing
       await connectDB();
       ready = true;
     }
@@ -16,7 +25,9 @@ module.exports = async (req, res) => {
     return app(req, res);
   } catch (err) {
     console.error('Serverless handler error:', err);
+    // Return JSON helpful message (avoid exposing sensitive details)
     res.statusCode = 500;
-    res.end('Internal Server Error');
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Internal Server Error', message: err.message }));
   }
 };
