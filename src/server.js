@@ -92,16 +92,21 @@ app.use((err, req, res, next) => {
   res.status(500).send("Internal Server Error");
 });
 
-// Start after DB connects
-const PORT = process.env.PORT || 5000;
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📁 Static files served from: ${path.join(__dirname, "../public")}`);
+// Export the app for serverless adapters and local run
+module.exports = app;
+
+// Start the HTTP server only when this file is run directly
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📁 Static files served from: ${path.join(__dirname, "../public")}`);
+      });
+    })
+    .catch((e) => {
+      console.error("❌ Failed to connect to MongoDB:", e);
+      process.exit(1);
     });
-  })
-  .catch((e) => {
-    console.error("❌ Failed to connect to MongoDB:", e);
-    process.exit(1);
-  });
+}
