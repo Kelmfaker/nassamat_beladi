@@ -34,7 +34,11 @@
             <% products.forEach(product => { %>
               <div class="product-card">
                 <div class="product-image">
-                  <img src="<%= product.image || '/images/default-product.jpg' %>" alt="<%= product.name %>">
+                  <% if (product.image) { const base = (product.image.startsWith('/') ? product.image : ('/images/' + product.image)).replace(/\.(jpg|jpeg|png|webp)$/i, ''); const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
+                    <img src="<%= imgSrc %>" alt="<%= product.name %>" srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w" sizes="(max-width:480px) 90vw, 360px">
+                  <% } else { %>
+                    <img src="/images/default-product.jpg" alt="<%= product.name %>">
+                  <% } %>
                   <% if (product.stock && product.stock < 5) { %>
                     <span class="badge-stock">بقي <%= product.stock %> فقط</span>
                   <% } %>
@@ -50,8 +54,13 @@
                   <div class="product-footer">
                     <p class="product-price"><%= product.price.toFixed(2) %> دج</p>
                     <button 
-                      onclick="addToCart('<%= product._id %>', '<%= product.name %>', <%= product.price %>, '<%= product.image || '' %>', '<%= product.category?.name || '' %>')"
                       class="btn btn-cart"
+                      data-product-id="<%= product._id %>"
+                      data-name="<%= (product.name || '').replace(/"/g,'&quot;') %>"
+                      data-price="<%= product.price %>"
+                      data-image="<%= product.image || '/images/default-product.jpg' %>"
+                      data-category="<%= product.category ? (product.category.name || '') : '' %>"
+                      onclick="addToCart(this.dataset.productId, this.dataset.name, Number(this.dataset.price), this.dataset.image, this.dataset.category)"
                       <% if (!product.stock || product.stock === 0) { %>disabled<% } %>
                     >
                       <i class="fas fa-shopping-cart"></i>

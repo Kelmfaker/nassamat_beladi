@@ -6,6 +6,14 @@ const Category = require("../models/category");
 const multer = require("multer");
 const path = require("path");
 const fs = require('fs');
+// Optional sharp for server-side resizing. If not installed, we gracefully skip resizing.
+let sharp;
+try {
+  sharp = require('sharp');
+} catch (err) {
+  sharp = null;
+  console.warn('sharp not installed — server-side image resizing will be skipped');
+}
 
 // Configure multer for image uploads
 // Ensure upload directory exists and use absolute path to be robust on Windows
@@ -60,6 +68,23 @@ router.post("/", isAdmin, upload.single("image"), async (req, res) => {
     const { name, description, price, category, inStock } = req.body;
     const image = req.file ? `/images/products/${req.file.filename}` : null;
 
+    // If sharp is available, create resized variants (sm/md/lg)
+    if (req.file && sharp) {
+      try {
+        const uploadDir = path.join(process.cwd(), 'public', 'images', 'products');
+        const parsed = path.parse(req.file.filename);
+        const originalPath = path.join(uploadDir, req.file.filename);
+        const variants = [ { suffix: '-sm', width: 400 }, { suffix: '-md', width: 800 }, { suffix: '-lg', width: 1200 } ];
+        await Promise.all(variants.map(v => {
+          const outName = parsed.name + v.suffix + parsed.ext;
+          const outPath = path.join(uploadDir, outName);
+          return sharp(originalPath).resize({ width: v.width }).toFile(outPath);
+        }));
+      } catch (resizeErr) {
+        console.error('Image resize error:', resizeErr);
+      }
+    }
+
     const product = new Product({
       name,
       description,
@@ -107,6 +132,23 @@ router.post("/:id", isAdmin, upload.single("image"), async (req, res) => {
 
     if (req.file) {
       updateData.image = `/images/products/${req.file.filename}`;
+
+      // resize variants on update as well if sharp present
+      if (sharp) {
+        try {
+          const uploadDir = path.join(process.cwd(), 'public', 'images', 'products');
+          const parsed = path.parse(req.file.filename);
+          const originalPath = path.join(uploadDir, req.file.filename);
+          const variants = [ { suffix: '-sm', width: 400 }, { suffix: '-md', width: 800 }, { suffix: '-lg', width: 1200 } ];
+          await Promise.all(variants.map(v => {
+            const outName = parsed.name + v.suffix + parsed.ext;
+            const outPath = path.join(uploadDir, outName);
+            return sharp(originalPath).resize({ width: v.width }).toFile(outPath);
+          }));
+        } catch (resizeErr) {
+          console.error('Image resize error (update):', resizeErr);
+        }
+      }
     }
 
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true }).lean();

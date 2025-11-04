@@ -63,7 +63,13 @@
                   <% const maxVisible = 6; %>
                   <% order.items.slice(0, maxVisible).forEach(item => { %>
                     <div class="order-item-thumb">
-                      <img src="<%= item.image || '/images/default-product.jpg' %>" alt="<%= item.name %>">
+                      <% if (item.image) { const base = item.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
+                        <img src="<%= item.image %>" alt="<%= item.name %>"
+                          srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
+                          sizes="80px">
+                      <% } else { %>
+                        <img src="/images/default-product.jpg" alt="<%= item.name %>">
+                      <% } %>
                       <span class="item-qty">×<%= item.quantity %></span>
                     </div>
                   <% }) %>

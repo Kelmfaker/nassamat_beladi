@@ -225,16 +225,23 @@
     function renderOrderSummary() {
       const container = document.getElementById('summary-items');
       
-      container.innerHTML = cart.map(item => `
+      container.innerHTML = cart.map(item => {
+        const imgSrc = item.image || '/images/default-product.jpg';
+        let imgTag = `<img src="${imgSrc}" alt="${item.name}">`;
+        if (item.image) {
+          const base = imgSrc.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+          imgTag = `<img src="${imgSrc}" alt="${item.name}" srcset="${base}-sm.jpg 400w, ${base}-md.jpg 800w, ${base}-lg.jpg 1200w" sizes="80px">`;
+        }
+        return `
         <div class="summary-item">
-          <img src="${item.image || '/images/default-product.jpg'}" alt="${item.name}">
+          ${imgTag}
           <div class="summary-item-details">
             <h4>${item.name}</h4>
             <p class="quantity">الكمية: ${item.quantity}</p>
             <p class="price">${(item.price * item.quantity).toFixed(2)} درهم</p>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
 
       updateTotals();
     }

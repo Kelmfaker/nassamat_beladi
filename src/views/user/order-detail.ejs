@@ -10,8 +10,8 @@
 <body>
   <%- include("../partials/header") %>
 
-  <main class="order-detail-content">
-    <div class="order-detail-container">
+  <main class="orders-content">
+    <div class="orders-container">
       <% if (typeof success !== 'undefined' && success) { %>
         <div class="success-banner">
           <i class="fas fa-check-circle"></i>
@@ -50,7 +50,13 @@
             <div class="order-items-list">
               <% order.items.forEach(item => { %>
                 <div class="order-item-detail">
-                  <img src="<%= item.image || '/images/default-product.jpg' %>" alt="<%= item.name %>">
+                  <% if (item.image) { const base = item.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
+                    <img src="<%= item.image %>" alt="<%= item.name %>"
+                      srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
+                      sizes="(max-width:480px) 30vw, 120px">
+                  <% } else { %>
+                    <img src="/images/default-product.jpg" alt="<%= item.name %>">
+                  <% } %>
                   <div class="item-info">
                     <h4><%= item.name %></h4>
                     <p class="item-quantity">الكمية: <%= item.quantity %></p>

@@ -338,7 +338,9 @@ nav {
   border: 2px solid #482f1e;
   max-height: 30em;
   min-height: 15em;
-  width: 15em;
+  /* responsive: allow product cards to flex while keeping the intended card width as a cap */
+  flex: 1 1 15em; /* grow/shrink but aim for 15em */
+  max-width: 15em;
   overflow: hidden;
   border-radius: 10px;
   margin: 10px;
@@ -573,6 +575,31 @@ footer::before {
 
 .footer-copy p {
   margin: 5px 0;
+}
+
+/* Footer logo sizing (keeps footer logo consistent and responsive) */
+.footer-logo img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  .footer-logo img {
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-logo img {
+    height: 45px;
+  }
+}
+
+@media (max-width: 360px) {
+  .footer-logo img {
+    height: 40px;
+  }
 }
 
 /* ========== FORMS ========== */
@@ -2319,7 +2346,10 @@ tbody td button {
    earlier, duplicated rules and ensure a single source of truth.
    ======================================================================== */
 
-/* Target grid cards, list/cart style cards and common image containers */
+/* Target grid cards, list/cart style cards and common image containers
+   Use the CSS variables defined at :root so site-wide thumbnail sizing
+   is configurable without changing the style. Keep !important only where
+   needed to override earlier conflicting rules. */
 .product-media,
 .products-grid.cart-style .product-media,
 .products-grid:not(.cart-style) .product-media,
@@ -2328,16 +2358,15 @@ tbody td button {
 .item-image img,
 .cart-item img,
 .avatar img,
-.item-image img,
 .products-grid.cart-style .product-media img,
 .product-media img {
-  width: var(100px) !important;
-  height: var(100px) !important;
-  min-width: var(80px) !important;
-  max-width: var(100px) !important;
-  max-height: var(100px) !important;
+  width: var(--product-thumb-size) !important;
+  height: var(--product-thumb-size) !important;
+  min-width: calc(var(--product-thumb-size) * 0.6) !important;
+  max-width: var(--product-thumb-size) !important;
+  max-height: var(--product-thumb-size) !important;
   aspect-ratio: 1 / 1 !important;
-  padding-bottom: 0 !important; /* override any padding-bottom tricks */
+  padding-bottom: 0 !important; /* override padding-bottom tricks */
   position: relative !important;
   object-fit: cover;
 }
@@ -2351,7 +2380,7 @@ tbody td button {
   height: 100% !important;
   object-fit: cover !important;
   display: block !important;
-  opacity: 1; /* default visible; .loaded can still be used for transition */
+  opacity: 1; /* visible by default; .loaded can still control transitions */
 }
 
 /* Mobile fallback sizes */
@@ -2362,11 +2391,11 @@ tbody td button {
   .prd-img img,
   .item-image img,
   .cart-item img {
-   width: var(60px) !important;
-  height: var(60px) !important;
-  min-width: var(80px) !important;
-  max-width: var(80px) !important;
-  max-height: var(100px) !important;
+    width: var(--product-thumb-size-mobile) !important;
+    height: var(--product-thumb-size-mobile) !important;
+    min-width: calc(var(--product-thumb-size-mobile) * 0.8) !important;
+    max-width: var(--product-thumb-size-mobile) !important;
+    max-height: var(--product-thumb-size-mobile) !important;
     aspect-ratio: 1 / 1 !important;
   }
 }
@@ -2452,5 +2481,93 @@ tbody td button {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Admin table responsive: on small screens convert table rows into stacked cards
+   using data-label attributes on td elements. Keep the desktop table intact. */
+.table-responsive { width: 100%; overflow-x: auto; }
+.table-responsive table.admin-table { width: 100%; border-collapse: collapse; }
+.table-responsive table.admin-table thead { background: #0D8442; color: #fff; }
+.table-responsive table.admin-table th, .table-responsive table.admin-table td { padding: 12px 10px; border-bottom: 1px solid #eee; text-align: left; }
+
+@media (max-width: 768px) {
+  .table-responsive table.admin-table thead { display: none; }
+  .table-responsive table.admin-table, .table-responsive table.admin-table tbody, .table-responsive table.admin-table tr { display: block; width: 100%; }
+  .table-responsive table.admin-table tr { margin-bottom: 12px; border: 1px solid #eee; border-radius: 8px; padding: 10px; }
+  .table-responsive table.admin-table td { display: flex; justify-content: space-between; padding: 8px 10px; border: none; }
+  .table-responsive table.admin-table td::before { content: attr(data-label); font-weight: 700; color: #333; margin-right: 10px; }
+  .table-responsive table.admin-table td.actions { display: flex; gap: 8px; justify-content: flex-end; }
+}
+
+/* ------------------------------------------------------------------
+   Extra responsive polish (laptop / tablet / mobile)
+   - Preserve existing visual style but make layout fluid and consistent
+   - Targets: container padding, grid columns for medium screens, and
+     flex-based product list fallbacks.
+   ------------------------------------------------------------------ */
+
+:root {
+  /* helpful breakpoints (can be adjusted) */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-laptop: 1024px;
+  --bp-desktop: 1440px;
+}
+
+/* Fluid typography baseline */
+html { font-size: clamp(14px, 0.9vw, 16px); }
+
+/* Container padding to keep content readable on narrow screens */
+.container, .content, .products-container {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Make the older `.products` flex layout behave responsively: allow items to
+   shrink on small screens and use a two-column layout on tablets */
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+.products .product {
+  flex: 1 1 15em; /* prefer ~15em but allow shrink/grow */
+  max-width: 15em;
+}
+
+/* Desktop / Large laptop: ensure grid doesn't create overly wide cards */
+@media (max-width: 1440px) {
+  .products-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+}
+
+/* Laptop & large tablets: 2 columns for products-grid when space is limited */
+@media (max-width: 1024px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
+  .container, .content { padding-left: 18px; padding-right: 18px; }
+}
+
+/* Tablet: slightly smaller images, two-column product flex layout */
+@media (max-width: 768px) {
+  .products .product { flex: 1 1 48%; max-width: 48%; }
+  .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .main { padding: 30px 12px; }
+}
+
+/* Mobile: single column, compact buttons and tighter spacing */
+@media (max-width: 480px) {
+  .products .product, .products-grid { grid-template-columns: 1fr; }
+  .products .product { flex: 1 1 100%; max-width: 100%; }
+  .main { padding: 24px 10px; }
+  header nav { padding: 10px 12px; }
+  .nav-links { gap: 6px; }
+  .logo img { height: 44px; width: 44px; }
+  /* Slightly smaller CTAs on small screens */
+  .main-btn, .btn-add { padding: 10px 18px; font-size: 0.95rem; }
+}
+
+/* Accessibility + reduce large animations on very small screens */
+@media (max-width: 420px) {
+  .product-card:hover { transform: none; }
 }
 

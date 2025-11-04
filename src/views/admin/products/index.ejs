@@ -72,7 +72,13 @@
                   data-image="<%= product.image || '' %>"
                   data-stock="<%= product.stock || 0 %>">
                   <div class="prd-img">
-                    <img src="<%= product.image || '/images/default-product.jpg' %>" alt="<%= product.name %>">
+                    <% if (product.image) { const base = product.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
+                      <img src="<%= product.image %>" alt="<%= product.name %>"
+                        srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
+                        sizes="(max-width:480px) 80vw, (max-width:1024px) 40vw, 180px">
+                    <% } else { %>
+                      <img src="/images/default-product.jpg" alt="<%= product.name %>">
+                    <% } %>
                   </div>
                   <div class="prd-description">
                     <h3 class="prd-title"><%= product.name %></h3>
@@ -207,7 +213,13 @@
             data-image="<%= p.image || '' %>"
             data-stock="<%= p.stock || 0 %>">
             <div class="prd-img">
-              <img src="<%= p.image || '/images/default-product.jpg' %>" alt="">
+              <% if (p.image) { const base = p.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
+                <img src="<%= p.image %>" alt=""
+                  srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
+                  sizes="(max-width:480px) 80vw, (max-width:1024px) 40vw, 180px">
+              <% } else { %>
+                <img src="/images/default-product.jpg" alt="">
+              <% } %>
             </div>
             <div class="prd-description">
               <h3 class="prd-title"><%= p.name %></h3>

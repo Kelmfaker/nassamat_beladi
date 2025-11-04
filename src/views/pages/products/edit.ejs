@@ -16,8 +16,11 @@
     <input type="number" name="promoPrice" value="<%= product.promoPrice %>">
 
     <label>الصورة الحالية</label><br>
-    <% if (product.image) { %>
-      <img src="/images/<%= product.image %>" width="120" alt="<%= product.name %>">
+    <% if (product.image) { 
+         const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image);
+         const base = imgSrc.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+    %>
+      <img src="<%= imgSrc %>" width="120" alt="<%= product.name %>" srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w" sizes="120px">
     <% } else { %>
       <span>لا توجد صورة</span>
     <% } %>

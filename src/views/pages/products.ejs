@@ -79,8 +79,11 @@
             <td><input type="number" name="stock" value="<%= product.stock %>"></td>
             <td><input type="checkbox" <%= product.inStock ? 'checked' : '' %>></td>
             <td>
-              <% if (product.image) { %>
-                <img src="/images/<%= product.image %>" width="70">
+              <% if (product.image) { 
+                   const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image);
+                   const base = imgSrc.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+              %>
+                <img src="<%= imgSrc %>" width="70" srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w" sizes="70px">
               <% } %>
             </td>
             <td>
