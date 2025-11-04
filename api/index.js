@@ -1,5 +1,5 @@
-const connectDB = require('./src/config/database');
-const app = require('./src/server');
+const connectDB = require('../src/config/database');
+const app = require('../src/server');
 
 // Ensure DB is connected before handling requests. connectDB caches connection so
 // repeated invocations are cheap in serverless environments.
