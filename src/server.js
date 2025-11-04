@@ -21,13 +21,18 @@ const Review = require("./models/review");
 
 // Routes
 const userRoutes = require("./routes/user.routes");
-const categoryRoutes = require("./routes/category.routes");
-const productRoutes = require("./routes/product.routes");
+const publicCategoryRoutes = require("./routes/category.routes");
+const publicProductRoutes = require("./routes/product.routes");
 const couponRoutes = require("./routes/coupon.routes");
 const orderRoutes = require("./routes/order.routes");
 const reviewRoutes = require("./routes/review.routes");
 const authRoutes = require("./routes/auth.routes");
 const cartRoutes = require("./routes/cart.routes");
+const adminDashboardRoutes = require("./routes/admin.dashboard.routes");
+const adminUsersRoutes = require("./routes/admin.users.routes");
+const adminProductsRoutes = require("./routes/admin.products.routes");
+const adminCategoriesRoutes = require("./routes/admin.categories.routes");
+const adminOrdersRoutes = require("./routes/admin.orders.routes");
 
 
 const app = express();
@@ -48,12 +53,21 @@ app.use(express.static(path.join(__dirname, "../public")));
 // routes
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
-app.use("/admin/categories", categoryRoutes);
-app.use("/admin/products", productRoutes);
-app.use("/orders", orderRoutes);
-app.use("/admin/orders", orderRoutes);
-app.use("/cart", cartRoutes);
-app.use('/products', require('./routes/product.routes'));
+
+// Public routes
+app.use('/products', publicProductRoutes);
+app.use('/categories', publicCategoryRoutes);
+app.use('/orders', orderRoutes);
+app.use('/cart', cartRoutes);
+
+// Admin routes
+app.use('/admin', adminDashboardRoutes);
+app.use('/admin/users', adminUsersRoutes);
+app.use('/admin/products', adminProductsRoutes);
+app.use('/admin/categories', adminCategoriesRoutes);
+app.use('/admin/orders', adminOrdersRoutes);
+
+app.use('/auth', authRoutes);
 
 // Home route (single response)
 app.get("/", async (req, res, next) => {

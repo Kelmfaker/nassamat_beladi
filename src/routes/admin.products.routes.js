@@ -5,11 +5,19 @@ const Product = require("../models/product");
 const Category = require("../models/category");
 const multer = require("multer");
 const path = require("path");
+const fs = require('fs');
 
 // Configure multer for image uploads
+// Ensure upload directory exists and use absolute path to be robust on Windows
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/images/products/");
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'images', 'products');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (err) {
+      cb(err);
+    }
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -21,8 +29,13 @@ const upload = multer({ storage });
 // GET - All products list
 router.get("/", isAdmin, async (req, res) => {
   try {
-    const products = await Product.find().populate("category").lean();
-    res.render("admin/products/index", { products, user: req.user });
+    // fetch products and categories so the admin products view (which includes
+    // the create/edit forms) has the data it expects
+  const products = await Product.find().populate("category").lean();
+  const categories = await Category.find().lean();
+  // pass useAdminHeader for explicit override if templates prefer it
+  // render unified admin/products/index.ejs
+  res.render("admin/products/index", { products, categories, user: req.user, useAdminHeader: true });
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
@@ -33,7 +46,8 @@ router.get("/", isAdmin, async (req, res) => {
 router.get("/create", isAdmin, async (req, res) => {
   try {
     const categories = await Category.find().lean();
-    res.render("admin/products/create", { categories, user: req.user });
+    // the new product form view is at src/views/admin/products/new.ejs
+    res.render("admin/products/new", { categories, user: req.user });
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
@@ -56,7 +70,11 @@ router.post("/", isAdmin, upload.single("image"), async (req, res) => {
     });
 
     await product.save();
-    res.redirect("/admin/products");
+    // If client expects JSON (AJAX), return created product JSON
+    if (req.xhr || req.accepts("json") === "json") {
+      return res.status(201).json({ success: true, product });
+    }
+    return res.redirect("/admin/products");
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
@@ -66,9 +84,9 @@ router.post("/", isAdmin, upload.single("image"), async (req, res) => {
 // GET - Edit product form
 router.get("/:id/edit", isAdmin, async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).lean();
-    const categories = await Category.find().lean();
-    res.render("admin/products/edit", { product, categories, user: req.user });
+    // Editing via modal on the main admin/products page — redirect back
+    // to the list and let client-side modal handle editing
+    return res.redirect('/admin/products');
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
@@ -91,8 +109,20 @@ router.post("/:id", isAdmin, upload.single("image"), async (req, res) => {
       updateData.image = `/images/products/${req.file.filename}`;
     }
 
-    await Product.findByIdAndUpdate(req.params.id, updateData);
-    res.redirect("/admin/products");
+    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true }).lean();
+    if (!updated) {
+      if (req.xhr || req.accepts("json") === "json") {
+        return res.status(404).json({ success: false, message: "Product not found" });
+      }
+      return res.status(404).send("Product not found");
+    }
+
+    // AJAX clients prefer JSON
+    if (req.xhr || req.accepts("json") === "json") {
+      return res.json({ success: true, product: updated });
+    }
+
+    return res.redirect("/admin/products");
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");
@@ -102,8 +132,19 @@ router.post("/:id", isAdmin, upload.single("image"), async (req, res) => {
 // DELETE - Delete product
 router.post("/:id/delete", isAdmin, async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
-    res.redirect("/admin/products");
+    const removed = await Product.findByIdAndDelete(req.params.id).lean();
+    if (!removed) {
+      if (req.xhr || req.accepts("json") === "json") {
+        return res.status(404).json({ success: false, message: "Product not found" });
+      }
+      return res.status(404).send("Product not found");
+    }
+
+    if (req.xhr || req.accepts("json") === "json") {
+      return res.json({ success: true });
+    }
+
+    return res.redirect("/admin/products");
   } catch (err) {
     console.error(err);
     res.status(500).send("Server Error");

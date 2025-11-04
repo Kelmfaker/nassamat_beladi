@@ -3,7 +3,7 @@
 <footer>
   <div class="footer-container">
     <div class="footer-logo">
-      <img src="/public/images/logo.png" alt="Logo">
+  <img src="/images/logo nassamat bladi copie.png" alt="Logo">
     </div>
 
     <div class="footer-links">
@@ -18,3 +18,21 @@
     </div>
   </div>
 </footer>
+ 
+  <!-- Global scripts -->
+  <script src="/js/main.js"></script>
+
+  <% if (typeof requestPath !== 'undefined') { %>
+    <% if (requestPath === '/admin') { %>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="/js/admin-dashboard.js"></script>
+    <% } %>
+
+    <% if (requestPath.startsWith('/admin/products')) { %>
+      <script src="/js/admin-products.js"></script>
+    <% } %>
+
+    <% if (requestPath.startsWith('/products') || requestPath === '/' || requestPath.startsWith('/shop')) { %>
+      <script src="/js/products.js"></script>
+    <% } %>
+  <% } %>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>تفاصيل المستخدم</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include("../../partials/admin-header") %>
+  <main class="content admin-dashboard" style="padding:2rem;">
+    <div class="admin-container">
+      <h1>تفاصيل المستخدم</h1>
+      <% if (u) { %>
+        <div class="admin-card">
+          <h2><%= u.name %></h2>
+          <p><strong>البريد الإلكتروني:</strong> <%= u.email %></p>
+          <p><strong>الصلاحية:</strong> <%= u.role %></p>
+          <p><strong>الحالة:</strong> <%= u.isActive !== false ? 'نشط' : 'معطل' %></p>
+          <p><strong>تاريخ التسجيل:</strong> <%= new Date(u.createdAt).toLocaleString('ar-DZ') %></p>
+          <div class="actions">
+            <a href="/admin/users" class="btn btn-secondary">الرجوع للقائمة</a>
+            <form action="/admin/users/<%= u._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد؟')">
+              <button class="btn btn-delete">حذف المستخدم</button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <p>المستخدم غير موجود.</p>
+      <% } %>
+    </div>
+  </main>
+  <%- include("../../partials/footer") %>
+</body>
+</html>

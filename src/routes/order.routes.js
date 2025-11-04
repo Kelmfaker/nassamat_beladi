@@ -167,7 +167,7 @@ router.get('/admin/all', protect, isAdmin, async (req, res) => {
       .populate('items.product')
       .sort({ createdAt: -1 })
       .lean();
-    return res.render('admin/orders', { orders, user: req.user });
+  return res.render('admin/orders/index', { orders, user: req.user });
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error loading orders');

@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>إدارة المستخدمين</title>
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <%- include("../partials/admin-header") %>
+  <%- include("../../partials/admin-header") %>
 
   <main class="content admin-dashboard" style="padding:2rem;">
     <div class="admin-container">
@@ -84,18 +83,17 @@
                     </td>
                     <td><%= new Date(u.createdAt).toLocaleDateString('ar-DZ') %></td>
                     <td class="actions">
+                      <a href="/admin/users/<%= u._id %>" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
                       <button onclick="editUser('<%= u._id %>', '<%= u.name %>', '<%= u.email %>', '<%= u.role %>')" class="btn btn-edit btn-sm">
                         <i class="fas fa-edit"></i>
                       </button>
-                      
                       <% if (u._id.toString() !== user._id.toString()) { %>
-                        <form action="/users/<%= u._id %>/toggle-active" method="POST" style="display:inline;">
+                        <form action="/admin/users/<%= u._id %>/toggle-active" method="POST" style="display:inline;">
                           <button type="submit" class="btn btn-warning btn-sm" title="<%= u.isActive !== false ? 'تعطيل' : 'تفعيل' %>">
                             <i class="fas fa-<%= u.isActive !== false ? 'ban' : 'check' %>"></i>
                           </button>
                         </form>
-                        
-                        <form action="/users/<%= u._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')">
+                        <form action="/admin/users/<%= u._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')">
                           <button type="submit" class="btn btn-delete btn-sm">
                             <i class="fas fa-trash"></i>
                           </button>
@@ -116,59 +114,13 @@
     </div>
   </main>
 
-  <!-- Edit modal -->
-  <div id="editModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>تعديل المستخدم</h2>
-      <form id="editForm" method="POST" class="admin-form">
-        <div class="form-group">
-          <label for="edit-name">الاسم *</label>
-          <input type="text" id="edit-name" name="name" required>
-        </div>
-
-        <div class="form-group">
-          <label for="edit-email">البريد الإلكتروني *</label>
-          <input type="email" id="edit-email" name="email" required>
-        </div>
-
-        <div class="form-group">
-          <label for="edit-role">الصلاحية *</label>
-          <select id="edit-role" name="role" required>
-            <option value="user">مستخدم</option>
-            <option value="admin">مدير</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="edit-password">كلمة المرور الجديدة (اتركه فارغاً للإبقاء على القديمة)</label>
-          <input type="password" id="edit-password" name="password">
-        </div>
-
-        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-      </form>
-    </div>
-  </div>
-
-  <%- include("../partials/footer") %>
+  <%- include("../../partials/footer") %>
 
   <script>
     function editUser(id, name, email, role) {
-      document.getElementById('editForm').action = '/users/' + id;
-      document.getElementById('edit-name').value = name;
-      document.getElementById('edit-email').value = email;
-      document.getElementById('edit-role').value = role;
-      document.getElementById('edit-password').value = '';
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    function closeModal() {
-      document.getElementById('editModal').style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById('editModal');
-      if (event.target === modal) closeModal();
+      // open modal handled client-side
+      // For now, navigate to edit route or use a modal
+      window.location = '/admin/users/' + id + '/edit';
     }
   </script>
 </body>

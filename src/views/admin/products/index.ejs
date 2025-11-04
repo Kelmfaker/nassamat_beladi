@@ -1,12 +1,196 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة المنتجات</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include("../../partials/admin-header") %>
+
+  <main class="content admin-dashboard" style="padding:2rem;">
+    <div class="admin-container">
+      <h1>إدارة المنتجات</h1>
+
+      <!-- Add new product form -->
+      <div class="admin-card">
+        <h2>إضافة منتج جديد</h2>
+        <form action="/admin/products" method="POST" class="admin-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">اسم المنتج *</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="price">السعر (دج) *</label>
+              <input type="number" id="price" name="price" step="0.01" min="0" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="category">القسم *</label>
+              <select id="category" name="category" required>
+                <option value="">اختر القسم</option>
+                <% (categories||[]).forEach(cat => { %>
+                  <option value="<%= cat._id %>"><%= cat.name %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="stock">الكمية المتوفرة</label>
+              <input type="number" id="stock" name="stock" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">الوصف</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="image">رابط الصورة</label>
+            <input type="text" id="image" name="image" placeholder="https://example.com/image.jpg">
+          </div>
+
+          <button type="submit" class="btn btn-primary">إضافة المنتج</button>
+        </form>
+      </div>
+
+      <!-- Products list -->
+      <div class="admin-card">
+        <h2>المنتجات الحالية</h2>
+        <% if (products && products.length > 0) { %>
+          <div class="products-grid">
+            <% products.forEach(product => { %>
+                <article class="product" data-product-id="<%= product._id %>"
+                  data-name="<%= (product.name||'').replace(/\"/g,'&quot;') %>"
+                  data-description="<%= (product.description||'').replace(/\"/g,'&quot;') %>"
+                  data-price="<%= product.price %>"
+                  data-category-id="<%= product.category?._id || '' %>"
+                  data-image="<%= product.image || '' %>"
+                  data-stock="<%= product.stock || 0 %>">
+                  <div class="prd-img">
+                    <img src="<%= product.image || '/images/default-product.jpg' %>" alt="<%= product.name %>">
+                  </div>
+                  <div class="prd-description">
+                    <h3 class="prd-title"><%= product.name %></h3>
+                    <p class="category"><%= product.category?.name || 'بدون قسم' %></p>
+                    <p class="description"><%= product.description || '-' %></p>
+                    <div class="prices">
+                      <div class="new-price"><%= product.price %> دج</div>
+                    </div>
+                    <p class="stock">المخزون: <%= product.stock || 0 %></p>
+                    <div class="center-button">
+                      <button onclick="editProduct('<%= product._id %>')" class="btn btn-edit">تعديل</button>
+                      <form action="/admin/products/<%= product._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
+                        <button type="submit" class="btn btn-delete">حذف</button>
+                      </form>
+                    </div>
+                  </div>
+                </article>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="no-data">لا توجد منتجات حالياً</p>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Edit modal -->
+  <div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content modal-large">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>تعديل المنتج</h2>
+      <form id="editForm" method="POST" class="admin-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-name">اسم المنتج *</label>
+            <input type="text" id="edit-name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-price">السعر (دج) *</label>
+            <input type="number" id="edit-price" name="price" step="0.01" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-category">القسم *</label>
+            <select id="edit-category" name="category" required>
+              <option value="">اختر القسم</option>
+              <% (categories||[]).forEach(cat => { %>
+                <option value="<%= cat._id %>"><%= cat.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-stock">الكمية المتوفرة</label>
+            <input type="number" id="edit-stock" name="stock" min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-description">الوصف</label>
+          <textarea id="edit-description" name="description" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-image">رابط الصورة</label>
+          <input type="text" id="edit-image" name="image">
+        </div>
+
+        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include("../../partials/footer") %>
+
+  <script>
+    function editProduct(id) {
+      // find the article element carrying data-attributes
+      const el = document.querySelector('[data-product-id="' + id + '"]');
+      if (!el) return;
+      const name = el.dataset.name || '';
+      const description = el.dataset.description || '';
+      const price = el.dataset.price || '';
+      const categoryId = el.dataset.categoryId || '';
+      const image = el.dataset.image || '';
+      const stock = el.dataset.stock || 0;
+
+      document.getElementById('editForm').action = '/admin/products/' + id;
+      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-description').value = description;
+      document.getElementById('edit-price').value = price;
+      document.getElementById('edit-category').value = categoryId;
+      document.getElementById('edit-image').value = image;
+      document.getElementById('edit-stock').value = stock;
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) closeModal();
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>إدارة المنتجات</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include("../../partials/header") %>
+  <%- include("../../partials/admin-header") %>
   <main class="products-content">
     <div class="products-container">
       <div class="products-header">
@@ -15,16 +199,20 @@
       </div>
       <div class="products-grid">
         <% products.forEach(p => { %>
-          <article class="product-card">
-            <div class="product-media">
+          <article class="product" data-product-id="<%= p._id %>"
+            data-name="<%= (p.name||'').replace(/\"/g,'&quot;') %>"
+            data-description="<%= (p.description||'').replace(/\"/g,'&quot;') %>"
+            data-price="<%= p.price %>"
+            data-category-id="<%= p.category?._id || '' %>"
+            data-image="<%= p.image || '' %>"
+            data-stock="<%= p.stock || 0 %>">
+            <div class="prd-img">
               <img src="<%= p.image || '/images/default-product.jpg' %>" alt="">
             </div>
-            <div class="product-body">
-              <h3 class="product-title"><%= p.name %></h3>
-              <div class="product-price">
-                <span class="price-current"><%= Number(p.price).toFixed(2) %> درهم</span>
-              </div>
-              <form method="POST" action="/admin/products/<%= p._id %>" enctype="multipart/form-data" class="product-cta" style="grid-template-columns:1fr">
+            <div class="prd-description">
+              <h3 class="prd-title"><%= p.name %></h3>
+              <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> درهم</div></div>
+              <form method="POST" action="/admin/products/<%= p._id %>" enctype="multipart/form-data" class="center-button">
                 <input type="file" name="image" accept="image/*" required>
                 <button class="btn-add" type="submit"><i class="fas fa-upload"></i> تحديث الصورة</button>
               </form>

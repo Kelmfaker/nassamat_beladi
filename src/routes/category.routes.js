@@ -6,8 +6,8 @@ const Category = require('../models/category');
 // List categories (admin UI)
 router.get('/', protect, isAdmin, async (req, res) => {
   try {
-    const categories = await Category.find().sort({ createdAt: -1 }).lean();
-    return res.render('admin/categories', { categories, user: req.user });
+  const categories = await Category.find().sort({ createdAt: -1 }).lean();
+  return res.render('admin/categories/index', { categories, user: req.user });
   } catch (err) {
     console.error(err);
     return res.status(500).send('Error loading categories');

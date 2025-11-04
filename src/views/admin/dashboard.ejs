@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>لوحة التحكم - إدارة</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/top-header') %>
+
+  <main class="content admin-dashboard" style="padding:2rem;">
+    <div class="container">
+      <h1 style="margin-bottom:1rem;">لوحة التحكم</h1>
+
+      <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
+        <div style="flex:1;">
+          <div class="dashboard-grid" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
+            <a href="/admin/products" class="dashboard-card-link">
+              <div class="card">
+                <h3>المنتجات</h3>
+                <p class="large"><%= productsCount %></p>
+              </div>
+            </a>
+
+            <a href="/admin/users" class="dashboard-card-link">
+              <div class="card">
+                <h3>المستخدمون</h3>
+                <p class="large"><%= usersCount %></p>
+              </div>
+            </a>
+
+            <a href="/admin/orders" class="dashboard-card-link">
+              <div class="card">
+                <h3>الطلبات</h3>
+                <p class="large"><%= ordersCount %></p>
+              </div>
+            </a>
+
+            <a href="/admin/orders" class="dashboard-card-link">
+              <div class="card">
+                <h3>الإيرادات (مدفوعة)</h3>
+                <p class="large"><%= totalRevenue.toFixed(2) %> دج</p>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div style="min-width:220px; display:flex; flex-direction:column; gap:.5rem;">
+          <a href="/admin/products/create" class="btn btn-primary" style="text-align:center;">إنشاء منتج</a>
+          <a href="/admin/orders" class="btn btn-secondary" style="text-align:center;">عرض الطلبات</a>
+          <a href="/admin/products" class="btn" style="text-align:center;">جميع المنتجات</a>
+        </div>
+      </div>
+
+      <div id="chartsPanelWrapper" style="margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
+          <h3 style="margin:0;">مخططات آخر 7 أيام</h3>
+        </div>
+
+        <div id="chartsPanel" class="charts-panel">
+          <div class="card chart-card">
+            <h4 class="chart-title">الطلبات</h4>
+            <div class="chart-wrap"><canvas id="ordersChart"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <h4 class="chart-title">الإيرادات</h4>
+            <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+      <section>
+        <h2>أحدث الطلبات</h2>
+        <% if (recentOrders && recentOrders.length) { %>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>المستخدم</th>
+                  <th>المجموع</th>
+                  <th>الحالة</th>
+                  <th>تاريخ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentOrders.forEach(o => { %>
+                  <tr>
+                    <td><%= o.orderNumber %></td>
+                    <td><%= o.user ? o.user.name : 'ضيف' %></td>
+                    <td><%= o.totalAmount.toFixed(2) %> دج</td>
+                    <td><%= o.status %></td>
+                    <td><%= new Date(o.createdAt).toLocaleString('ar-EG-u-nu-latn') %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <p>لا توجد طلبات حديثة.</p>
+        <% } %>
+      </section>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <!-- Chart data (injected) -->
+  <script>
+    // Minimal injection for external admin-dashboard.js to consume
+    window.adminChartData = <%- JSON.stringify(chart || { labels: [], ordersData: [], revenueData: [] }) %>;
+  </script>
+</body>
+</html>
