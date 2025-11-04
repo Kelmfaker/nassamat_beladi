@@ -14,7 +14,9 @@ async function connectDB() {
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri, {
       dbName,
-      serverSelectionTimeoutMS: 15000,
+      // Increase timeouts for serverless cold starts / remote DB latency
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
       socketTimeoutMS: 45000,
       maxPoolSize: 10,
       minPoolSize: 1,
@@ -24,6 +26,8 @@ async function connectDB() {
       console.log(`✅ MongoDB connected (db: ${dbName})`);
       return m;
     }).catch((e) => {
+      // Log detailed error to help diagnose connection issues on Vercel
+      console.error('❌ MongoDB connection error:', e && e.message ? e.message : e);
       cached.promise = null;
       throw e;
     });
