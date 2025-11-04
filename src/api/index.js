@@ -19,7 +19,9 @@ module.exports = async (req, res) => {
 
     return app(req, res);
   } catch (err) {
-    console.error('Serverless handler error:', err);
+    // Log error with stack to help diagnose runtime issues on Vercel
+    console.error('Serverless handler error:', err && err.message ? err.message : err);
+    if (err && err.stack) console.error(err.stack);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Internal Server Error', message: err.message }));

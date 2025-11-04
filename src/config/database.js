@@ -7,7 +7,11 @@ async function connectDB() {
   if (cached.conn) return cached.conn;
 
   const uri = process.env.MONGO_URI;
-  if (!uri) throw new Error('MONGO_URI is missing');
+  if (!uri) {
+    const msg = 'MONGO_URI is missing';
+    console.error('❌', msg);
+    throw new Error(msg);
+  }
 
   const dbName = process.env.DB_NAME || 'nassamatbeladi';
 
@@ -26,8 +30,25 @@ async function connectDB() {
       console.log(`✅ MongoDB connected (db: ${dbName})`);
       return m;
     }).catch((e) => {
+      // Determine host / cluster info without exposing credentials
+      let hostInfo = 'unknown-host';
+      try {
+        const withoutCreds = uri.replace(/\/\/.*@/, '//');
+        const u = new URL(withoutCreds);
+        hostInfo = u.host;
+      } catch (parseErr) {
+        const m = uri.match(/\/\/(?:.*@)?([^/]+)/);
+        hostInfo = m ? m[1] : hostInfo;
+      }
+
       // Log detailed error to help diagnose connection issues on Vercel
       console.error('❌ MongoDB connection error:', e && e.message ? e.message : e);
+      console.error('   Host:', hostInfo);
+      if (e && e.stack) {
+        // Print a trimmed stack (first 6 lines) to aid debugging without flooding logs
+        const stackLines = e.stack.split('\n').slice(0, 6).join('\n');
+        console.error('   Stack (truncated):\n', stackLines);
+      }
       cached.promise = null;
       throw e;
     });
