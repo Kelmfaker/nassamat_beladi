@@ -1,6 +1,8 @@
-const connectDB = require('../config/database');
-const app = require('../server');
+const connectDB = require('../src/config/database');
+const app = require('../src/server');
 
+// Ensure DB is connected before handling requests. connectDB caches connection so
+// repeated invocations are cheap in serverless environments.
 let ready = false;
 
 module.exports = async (req, res) => {
@@ -10,6 +12,7 @@ module.exports = async (req, res) => {
       ready = true;
     }
 
+    // Forward the incoming request to the Express app
     return app(req, res);
   } catch (err) {
     console.error('Serverless handler error:', err);
