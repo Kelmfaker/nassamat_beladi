@@ -16,7 +16,7 @@
       <!-- Add new product form -->
       <div class="admin-card">
         <h2>إضافة منتج جديد</h2>
-        <form action="/admin/products" method="POST" class="admin-form">
+  <form action="/admin/products" method="POST" class="admin-form" enctype="multipart/form-data">
           <div class="form-row">
             <div class="form-group">
               <label for="name">اسم المنتج *</label>
@@ -50,8 +50,8 @@
           </div>
 
           <div class="form-group">
-            <label for="image">رابط الصورة</label>
-            <input type="text" id="image" name="image" placeholder="https://example.com/image.jpg">
+            <label for="image">تحميل صورة المنتج</label>
+            <input type="file" id="image" name="image" accept="image/*">
           </div>
 
           <button type="submit" class="btn btn-primary">إضافة المنتج</button>
@@ -64,9 +64,21 @@
         <% if (products && products.length > 0) { %>
           <div class="products-grid">
             <% products.forEach(product => { %>
-              <div class="product-card-admin">
+        <div class="product-card-admin" data-product-id="<%= product._id %>"
+          data-name="<%= (product.name||'').replace(/\"/g,'&quot;') %>"
+          data-description="<%= (product.description||'').replace(/\"/g,'&quot;') %>"
+          data-price="<%= product.price %>"
+          data-category-id="<%= product.category?._id || '' %>"
+          data-image="<%= product.image || '' %>"
+          data-stock="<%= product.stock || 0 %>">
                 <div class="product-image">
-                  <img src="<%= product.image || '/images/default-product.jpg' %>" alt="<%= product.name %>">
+                  <% if (product.image) {
+                       const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image);
+                  %>
+                    <img src="<%= imgSrc %>" alt="<%= product.name %>">
+                  <% } else { %>
+                    <img src="/images/logo nassamat bladi copie.png" alt="<%= product.name %>">
+                  <% } %>
                 </div>
                 <div class="product-info">
                   <h3><%= product.name %></h3>
@@ -75,7 +87,7 @@
                   <p class="price"><%= product.price %> دج</p>
                   <p class="stock">المخزون: <%= product.stock || 0 %></p>
                   <div class="actions">
-                    <button onclick="editProduct('<%= product._id %>', '<%= product.name %>', '<%= product.description || '' %>', '<%= product.price %>', '<%= product.category?._id || '' %>', '<%= product.image || '' %>', '<%= product.stock || 0 %>')" class="btn btn-edit">تعديل</button>
+                    <button onclick="editProduct('<%= product._id %>')" class="btn btn-edit">تعديل</button>
                     <form action="/admin/products/<%= product._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
                       <button type="submit" class="btn btn-delete">حذف</button>
                     </form>
@@ -96,7 +108,7 @@
     <div class="modal-content modal-large">
       <span class="close" onclick="closeModal()">&times;</span>
       <h2>تعديل المنتج</h2>
-      <form id="editForm" method="POST" class="admin-form">
+  <form id="editForm" method="POST" class="admin-form" enctype="multipart/form-data">
         <div class="form-row">
           <div class="form-group">
             <label for="edit-name">اسم المنتج *</label>
@@ -130,8 +142,11 @@
         </div>
 
         <div class="form-group">
-          <label for="edit-image">رابط الصورة</label>
-          <input type="text" id="edit-image" name="image">
+          <label for="edit-image">صورة المنتج الحالية (اختياري: اختر ملفاً لاستبدالها)</label>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <img id="edit-image-preview" src="" alt="معاينة الصورة" style="width:64px;height:64px;object-fit:cover;border:1px solid #e0e0e0;border-radius:4px;" />
+            <input type="file" id="edit-image" name="image" accept="image/*">
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
@@ -142,13 +157,33 @@
   <%- include("../partials/footer") %>
 
   <script>
-    function editProduct(id, name, description, price, categoryId, image, stock) {
+    function editProduct(id) {
+      const el = document.querySelector('[data-product-id="' + id + '"]');
+      if (!el) return;
+      const name = el.dataset.name || '';
+      const description = el.dataset.description || '';
+      const price = el.dataset.price || '';
+      const categoryId = el.dataset.categoryId || '';
+      const image = el.dataset.image || '';
+      const stock = el.dataset.stock || 0;
+
       document.getElementById('editForm').action = '/admin/products/' + id;
       document.getElementById('edit-name').value = name;
       document.getElementById('edit-description').value = description;
       document.getElementById('edit-price').value = price;
       document.getElementById('edit-category').value = categoryId;
-      document.getElementById('edit-image').value = image;
+      // show current image in preview; the file input stays empty unless admin chooses a file
+      const editImageInput = document.getElementById('edit-image');
+      const editImagePreview = document.getElementById('edit-image-preview');
+      if (image) {
+        const imgSrc = image.startsWith('/') ? image : ('/images/' + image);
+        editImagePreview.src = imgSrc;
+        editImagePreview.style.display = '';
+      } else {
+        editImagePreview.src = '/images/default-product.svg';
+      }
+      // clear any previous selected file
+      if (editImageInput) editImageInput.value = '';
       document.getElementById('edit-stock').value = stock;
       document.getElementById('editModal').style.display = 'block';
     }

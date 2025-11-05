@@ -418,11 +418,11 @@ nav {
   background-color: #0D8442;
   color: #fff;
   border: none;
-  width: 35px;
-  height: 35px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 12px;
   transition: all 0.3s;
   display: flex;
   align-items: center;
@@ -789,7 +789,7 @@ tbody td button {
 }
 
 .cart-container {
-  max-width: 1200px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -855,10 +855,10 @@ tbody td button {
 }
 
 .qty-btn {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
   border: 1px solid #ddd;
-  background: white;
+  background:#482f1e;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -868,15 +868,15 @@ tbody td button {
 }
 
 .qty-btn:hover {
-  background: #007bff;
+  background:#0a6b35;
   color: white;
   border-color: #007bff;
 }
 
 .qty-input {
-  width: 60px;
+  width: 10px;
   text-align: center;
-  padding: 0.5rem;
+  padding: 0.2rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
@@ -2305,6 +2305,44 @@ tbody td button {
 }
 .btn.btn-save:hover { transform: translateY(-2px); }
 
+/* Small button variant used in tables/actions */
+.btn-sm { padding: .35rem .6rem; font-size: .85rem; border-radius: 8px; }
+
+/* Action button variants */
+.btn-info { background: #17a2b8; color: #fff; }
+.btn-info:hover { opacity: .95; }
+
+.btn-warning { background: #f0ad4e; color: #fff; }
+.btn-warning:hover { opacity: .95; }
+
+.btn-delete { background: #dc3545; color: #fff; }
+.btn-delete:hover { opacity: .95; }
+
+/* Ensure icons inside buttons inherit the button's foreground color */
+.btn i, .btn .fas, .btn .far { color: inherit; }
+
+/* Edit button (secondary style) */
+.btn-edit { background: #ffc; color: #825221; border: 1px solid #f0e6c2; }
+.btn-edit:hover { filter: brightness(.98); }
+
+/* Admin table action buttons: compact, high-contrast, keyboard accessible */
+.actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; }
+.actions .btn-sm { padding: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.95rem; }
+.actions .btn-sm i { font-size: 1rem; }
+
+/* Focus styles for keyboard users */
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13,132,66,0.18);
+}
+
+/* Improve contrast: use white icons on colored backgrounds */
+.btn-info, .btn-warning, .btn-delete { color: #fff; }
+.btn-info i, .btn-warning i, .btn-delete i { color: inherit; }
+
+/* Slight hover lift */
+.actions .btn-sm:hover { transform: translateY(-2px); }
+
 .profile-sidebar { display: flex; flex-direction: column; gap: 1rem; }
 
 .avatar-card { display: flex; gap: 1rem; align-items: center; }
@@ -2569,5 +2607,110 @@ html { font-size: clamp(14px, 0.9vw, 16px); }
 /* Accessibility + reduce large animations on very small screens */
 @media (max-width: 420px) {
   .product-card:hover { transform: none; }
+}
+
+
+/* Checkout page styles */
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+.cart-form-section {
+  min-width: 0;
+}
+
+.cart-form .form-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  margin-bottom: 18px;
+}
+
+.cart-form .form-card h2 {
+  margin: 0 0 12px 0;
+  font-size: 1.05rem;
+  color: #825221;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.cart-form .form-group { margin-bottom: 12px; }
+.cart-form label { display: block; margin-bottom: 6px; font-weight: 700; color: #333; }
+.cart-form input[type="text"], .cart-form input[type="tel"], .cart-form select, .cart-form textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid #e6e6e6; border-radius: 8px; font-size: 0.95rem;
+}
+
+.payment-methods { display: flex; gap: 10px; flex-wrap: wrap; }
+.payment-option { flex: 1 1 48%; }
+.payment-card { background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 10px; display:flex; gap:12px; align-items:center; }
+.payment-card i { font-size: 1.4rem; color: #0D8442; }
+.payment-option input { margin-right: 8px; transform: scale(1.05); }
+
+.btn-submit { display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+.btn-submit .fas { margin-left: 6px; }
+
+.order-summary-section { min-width: 0; }
+.summary-card { background: linear-gradient(180deg,#fff,#fff); padding: 18px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+.summary-card h2 { margin-top: 0; font-size: 1.05rem; color: #333; display:flex; gap:.5rem; align-items:center; }
+
+.summary-items { display:flex; flex-direction:column; gap:12px; max-height: 320px; overflow:auto; padding-right: 6px; }
+.summary-item { display:flex; gap:12px; align-items:center; background:#fafafa; padding:8px; border-radius:10px; }
+.summary-item img { width: 72px; height: 72px; object-fit:cover; border-radius:8px; flex:0 0 72px; }
+.summary-item-details h4 { margin:0 0 6px 0; font-size:0.98rem; }
+.summary-item-details .quantity { color:#666; font-size:0.9rem; margin:0; }
+.summary-item-details .price { font-weight:800; color:#0D8442; margin:6px 0 0 0; }
+
+.summary-divider { height:1px; background:linear-gradient(90deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02)); margin:12px 0; }
+.summary-totals .summary-row { display:flex; justify-content:space-between; padding:8px 0; font-weight:700; }
+.summary-totals .summary-total { font-size:1.15rem; color:#111; }
+.summary-note { display:flex; gap:10px; align-items:flex-start; color:#666; font-size:0.95rem; margin-top:12px; }
+
+/* Sticky summary on larger screens */
+.summary-card.sticky { position: sticky; top: 20px; }
+
+@media (max-width: 992px) {
+  .cart-grid { grid-template-columns: 1fr; }
+  .summary-card.sticky { position: static; }
+}
+
+/* ------------------------------------------------------------------
+   Make product images responsive: scale to their container width.
+   Images will fill the container's width (up to a sensible cap) and
+   keep their intrinsic aspect ratio. Containers that enforce a square
+   aspect-ratio (via .product-media, etc.) will continue to control
+   layout; these rules ensure images scale with their containers.
+   ------------------------------------------------------------------ */
+.prd-img img,
+.product-media img,
+.product-image img,
+.products .product img,
+.product-card img,
+.product img,
+.item-image img {
+  display: block;
+  width: 100%;        /* fill the width of the image container */
+  height: auto;       /* preserve aspect ratio */
+  max-width: var(--product-thumb-size, 100%);
+  object-fit: cover;  /* for containers that clip, behave like cover */
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .prd-img img,
+  .product-media img,
+  .product-image img,
+  .products .product img,
+  .product-card img,
+  .product img,
+  .item-image img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+  }
 }
 

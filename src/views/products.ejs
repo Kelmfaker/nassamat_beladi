@@ -55,14 +55,16 @@
         <% products.forEach(product => { %>
           <article class="product" data-product-id="<%= product._id %>">
             <div class="prd-img">
-              <% if (product.image) { 
-                   const base = product.image.replace(/\.(jpg|jpeg|png|webp)$/i, '');
+              <% if (product.image) {
+                   const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image);
+                   const base = imgSrc.replace(/\.(jpg|jpeg|png|webp)$/i, '');
               %>
-                <img loading="lazy" src="<%= product.image %>" alt="<%= product.name %>"
+                <img loading="lazy" src="<%= imgSrc %>" alt="<%= product.name %>"
                   srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
                   sizes="(max-width:480px) 90vw, (max-width:1024px) 45vw, 360px">
-              <% } else { %>
-                <img loading="lazy" src="/images/default-product.jpg" alt="<%= product.name %>">
+                <% } else { %>
+                <!-- Fallback to site logo if default-product.svg is not present -->
+                <img loading="lazy" src="/images/logo nassamat bladi copie.png" alt="<%= product.name %>">
               <% } %>
             </div>
             <div class="prd-description">

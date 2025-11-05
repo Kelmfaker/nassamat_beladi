@@ -44,7 +44,7 @@ router.post('/validate', async (req, res) => {
         productId: product._id.toString(),
         name: product.name || 'منتج غير معروف',
         price: product.price || 0,
-        image: product.image || '/images/default-product.jpg',
+  image: product.image || '/images/default-product.svg',
         category: product.category?.name || '',
         quantity: parseInt(item.quantity) || 1,
         stock: parseInt(product.stock) || 0,

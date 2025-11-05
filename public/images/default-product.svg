@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" role="img" aria-label="Default product image">
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  <g transform="translate(110,120)">
+    <rect width="580" height="560" rx="20" fill="#ffffff" stroke="#e6e6e6"/>
+    <g transform="translate(40,40)" fill="#d6d6d6">
+      <rect x="0" y="0" width="200" height="200" rx="12" fill="#efecec"/>
+      <rect x="220" y="0" width="320" height="24" rx="6" />
+      <rect x="220" y="40" width="260" height="18" rx="6" />
+      <rect x="0" y="220" width="560" height="18" rx="6" />
+      <rect x="0" y="250" width="420" height="18" rx="6" />
+    </g>
+    <g transform="translate(220,300)" fill="#cfcfcf">
+      <circle cx="80" cy="40" r="40" fill="#f0f0f0"/>
+      <rect x="140" y="16" width="220" height="48" rx="8" />
+    </g>
+  </g>
+  <text x="50%" y="93%" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#9b9b9b" font-size="20">نسمات بلادي — صورة افتراضية</text>
+</svg>
