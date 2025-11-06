@@ -369,6 +369,58 @@ nav {
   height: 100%;
   object-fit: cover;
   transition: 0.3s ease-in-out;
+
+/* ------------------------------------------------------------------
+   Product detail page styles (moved from inline template)
+   These styles match the three-column layout used on product-detail.ejs
+------------------------------------------------------------------- */
+.product-detail-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 360px;
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 992px) {
+  .product-detail-grid { grid-template-columns: 1fr; }
+  .product-side-actions { order: -1; }
+}
+
+.product-main-image {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 520px;
+}
+.product-main-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.product-gallery { display: flex; flex-direction: column; gap: .5rem; }
+.product-thumb { width: 100%; height: 160px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px solid #eee; }
+.product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.product-side { background: #fff; border-radius: 8px; padding: 1rem; border: 1px solid #eee; display: flex; flex-direction: column; gap: 12px; }
+.product-side h1 { margin: 0; font-size: 1.6rem; }
+.product-side .category { color: #777; font-size: .95rem; }
+.product-side .price { color: var(--price-color,#0D8442); font-weight: 900; font-size: 1.4rem; }
+
+.product-side-actions { display: flex; flex-direction: column; gap: .75rem; align-items: stretch; }
+.product-side-actions .btn { display:flex; align-items:center; justify-content:center; gap:.5rem; }
+.product-side-actions .btn .icon { margin: 0 .5rem 0 0; }
+
+.prd-desc { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 6; }
+.prd-desc.expanded { -webkit-line-clamp: unset; max-height: none; line-clamp: unset; }
+
+.side-image-box { margin-top: auto; display: block; }
+.side-image-box img { width: 100%; border-radius: 8px; object-fit: cover; }
+
 }
 
 .prd-description {
@@ -1410,17 +1462,7 @@ tbody td button {
 @media (max-width: 600px)  { .products-grid { grid-template-columns: 1fr; } }
 
 /* Product card */
-.product-card {
-  position: relative;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.08);
-  border: 2px solid transparent;
-  transition: .3s;
-  display: flex; flex-direction: column;
-  width: 100%;
-  max-width: 360px; /* cap card width so it doesn't become too large */
-}
+/* (duplicate base block removed — canonical block near EOF retains base rules) */
 .product-card::before {
   content: ''; position: absolute; inset: 0 0 0 auto; width: 6px; border-radius: 0 16px 16px 0;
   background: linear-gradient(180deg, #0D8442 0%, #D1CB29 100%);
@@ -1485,7 +1527,6 @@ tbody td button {
 }
 
 /* Personalization overlay and micro-interactions */
-.product-card { position: relative; overflow: visible; }
 .product-card .personal-overlay {
   position: absolute;
   inset: 12px 12px auto auto;
@@ -1493,6 +1534,7 @@ tbody td button {
   top: 12px;
   display: flex;
   flex-direction: column;
+  
   gap: 6px;
   align-items: flex-end;
   pointer-events: none;
@@ -1527,42 +1569,19 @@ tbody td button {
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 }
 
-/* Subtle 3D tilt on hover (small, performant) */
-.product-card { transform-origin: center; transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms; }
-.product-card:hover { transform: translateY(-10px) rotateX(1deg); }
+/* Subtle 3D tilt on hover (small, performant)
+  (Canonical hover/transform rules are centralized later in the
+  consolidated `.product-card` block — earlier duplicates removed.) */
 
 /* Accessible reduced-motion fallback */
 @media (prefers-reduced-motion: reduce) {
   .product-card, .product-card:hover, .product-card .personal-overlay { transition: none; transform: none; }
 }
 
-.product-media {
-  position: relative;
-  border-radius: 16px 16px 0 0;
-  overflow: hidden;
-  background: #f5f5f5;
-  /* Fixed square thumbnail for all product cards */
-  width: var(--product-thumb-size);
-  height: var(--product-thumb-size);
-  margin: 0 auto; /* center in grid cards */
-  display: block;
-}
-.product-media img,
-.product-media img.product-img {
-  /* Fill the fixed square and center-crop */
-  width: 100%;
-  height: 40%;
-  object-fit: cover;
-  display: block;
-  transition: transform .35s ease, opacity .35s ease;
-  opacity: 0;
-}
-.product-card:hover .product-media img { transform: scale(1.06); }
-
-/* Fade-in when image loaded */
-.product-media img.product-img.loaded {
-  opacity: 1;
-}
+/* Earlier `.product-media` duplicates removed in favor of the canonical
+   `.product-media` rules located near the end of this file. Variants like
+   `.product-card.side-info`, `.products-grid.cart-style`, and
+   `.products-grid.list-view` remain intact. */
 
 /* CTA compact text handled with .btn-text — hide on narrow screens */
 .product-cta .btn-text { margin-left: 8px; }
@@ -1572,11 +1591,6 @@ tbody td button {
   .product-cta .btn-add { padding: .5rem .75rem; border-radius: 8px; }
   .product-cta .btn-wishlist { width: 44px; height: 44px; }
 }
-
-/* Make product card more compact and responsive */
-.product-card { border-radius: 12px; overflow: hidden; }
-.product-media { height: 0; padding-bottom: 100%; position: relative; }
-.product-media img { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* Personal overlay adjustments */
 .personal-overlay { right: 10px; top: 10px; }
@@ -1588,7 +1602,6 @@ tbody td button {
 
 @media (max-width: 768px) {
   .products-grid { gap: 14px; }
-  .product-card { padding: 8px; }
   .product-title { font-size: .95rem; }
 }
 
@@ -1681,6 +1694,65 @@ tbody td button {
 }
 .products-grid.list-view .product-media { width: 35%; border-radius: 16px 0 0 16px; }
 .products-grid.list-view .product-body { width: 65%; align-content: center; }
+
+/* Horizontal/list-style product card: image on the right, content on the left
+   Applies to the list-view and older `.products` list markup. Stacks on small screens. */
+.products-grid.list-view .product-card,
+.products .product {
+  display: flex;
+  flex-direction: row-reverse; /* image to the right */
+  gap: 1rem;
+  align-items: center;
+}
+.products-grid.list-view .product-media,
+.products .product .prd-img,
+.products .product .product-image {
+  flex: 0 0 var(--product-thumb-size, 180px);
+  width: var(--product-thumb-size, 180px);
+  height: var(--product-thumb-size, 180px);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.products-grid.list-view .product-body,
+.products .product .product-info,
+.products .product .prd-description {
+  flex: 1 1 auto;
+}
+@media (max-width: 768px) {
+  .products-grid.list-view .product-card,
+  .products .product {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .products-grid.list-view .product-media,
+  .products .product .prd-img,
+  .products .product .product-image {
+    width: var(--product-thumb-size-mobile) !important;
+    height: var(--product-thumb-size-mobile) !important;
+    margin: 0 auto 0.5rem;
+  }
+}
+
+/* Utility: make any product-card render horizontally (image on right) */
+.product-card.horizontal {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 1rem;
+  align-items: center;
+}
+.product-card.horizontal .product-image,
+.product-card.horizontal .product-media {
+  flex: 0 0 var(--product-thumb-size, 180px);
+  width: var(--product-thumb-size, 180px);
+  height: var(--product-thumb-size, 180px);
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .product-card.horizontal { flex-direction: column; }
+  .product-card.horizontal .product-image,
+  .product-card.horizontal .product-media { width: var(--product-thumb-size-mobile) !important; height: var(--product-thumb-size-mobile) !important; }
+}
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
@@ -1900,15 +1972,7 @@ tbody td button {
 @media (max-width: 600px)  { .products-grid { grid-template-columns: 1fr; } }
 
 /* Product card */
-.product-card {
-  position: relative;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.08);
-  border: 2px solid transparent;
-  transition: .3s;
-  display: flex; flex-direction: column;
-}
+/* (duplicate base block removed — canonical block near EOF retains base rules) */
 .product-card::before {
   content: ''; position: absolute; inset: 0 0 0 auto; width: 6px; border-radius: 0 16px 16px 0;
   background: linear-gradient(180deg, #0D8442 0%, #D1CB29 100%);
@@ -1919,14 +1983,7 @@ tbody td button {
   border-color: #0D8442;
 }
 
-.product-media {
-  position: relative; border-radius: 16px 16px 0 0; overflow: hidden;
-  aspect-ratio: 1 / 1; background: #f5f5f5;
-}
-.product-media img {
-  width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease;
-}
-.product-card:hover .product-media img { transform: scale(1.06); }
+/* [removed duplicate .product-media block — canonical rules at end of file] */
 
 .badges {
   position: absolute; top: .75rem; left: .75rem; display: flex; gap: .4rem; z-index: 2;
@@ -2121,15 +2178,7 @@ tbody td button {
 @media (max-width: 60px)  { .products-grid { grid-template-columns: 1fr; } }
 
 /* Product card */
-.product-card {
-  position: relative;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.08);
-  border: 2px solid transparent;
-  transition: .3s;
-  display: flex; flex-direction: column;
-}
+/* (duplicate base block removed — canonical block near EOF retains base rules) */
 .product-card::before {
   content: ''; position: absolute; inset: 0 0 0 auto; width: 6px; border-radius: 0 16px 16px 0;
   background: linear-gradient(180deg, #0D8442 0%, #D1CB29 100%);
@@ -2140,14 +2189,7 @@ tbody td button {
   border-color: #0D8442;
 }
 
-.product-media {
-  position: relative; border-radius: 16px 16px 0 0; overflow: hidden;
-  aspect-ratio: 1 / 1; background: #f5f5f5;
-}
-.product-media img {
-  width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease;
-}
-.product-card:hover .product-media img { transform: scale(1.06); }
+/* [removed duplicate .product-media block — canonical / variable-based rules at EOF] */
 
 .badges {
   position: absolute; top: .75rem; left: .75rem; display: flex; gap: .4rem; z-index: 2;
@@ -2398,8 +2440,8 @@ tbody td button {
 .avatar img,
 .products-grid.cart-style .product-media img,
 .product-media img {
-  width: var(--product-thumb-size) !important;
-  height: var(--product-thumb-size) !important;
+  width: var(--product-thumb-size);
+  height: var(--product-thumb-size);
   min-width: calc(var(--product-thumb-size) * 0.6) !important;
   max-width: var(--product-thumb-size) !important;
   max-height: var(--product-thumb-size) !important;
@@ -2449,12 +2491,17 @@ tbody td button {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: stretch;
+  align-items: center;
+ 
   min-height: 380px; /* ensures uniform cards in grid */
   max-height: 460px; /* prevent cards from growing too tall */
-  padding: 0; /* image and body control spacing */
+  padding: 20px; /* image and body control spacing */
   gap: 8px;
   overflow: hidden; /* clip excessive content so cards remain consistent */
+  border: 1px solid #dddee0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
 }
 
 .products-grid .product-media {
@@ -2474,8 +2521,8 @@ tbody td button {
 }
 
 .product-title {
-  margin: 0 0 8px;
-  font-size: 1.02rem;
+  margin: 0 0 2px;
+  font-size: 0.5rem;
   line-height: 1.25;
   text-align: center;
 }
@@ -2483,16 +2530,16 @@ tbody td button {
 .product-cta {
   margin-top: auto;
   display: flex;
-  gap: 8px;
+  gap: .5rem;
   justify-content: center;
   align-items: center;
 }
 
 .btn-add, .btn-wishlist {
-  height: 40px;
-  min-width: 44px;
+  height: 10px;
+  min-width: 20px;
   padding: 6px 10px;
-  font-size: 0.95rem;
+  font-size: 0.5rem;
   border-radius: 10px;
 }
 
@@ -2519,6 +2566,28 @@ tbody td button {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Read-more / expand behaviour */
+.prd-desc.expanded {
+  display: block; /* allow full height */
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  max-height: none;
+}
+.read-more {
+  display: inline-block;
+  margin: 6px 0 8px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #0D8442;
+  font-weight: 800;
+  cursor: pointer;
+}
+.read-more:focus {
+  outline: none;
+  text-decoration: underline;
 }
 
 /* Admin table responsive: on small screens convert table rows into stacked cards
@@ -2679,6 +2748,80 @@ html { font-size: clamp(14px, 0.9vw, 16px); }
 }
 
 /* ------------------------------------------------------------------
+   Consolidated product-card base styles
+   ------------------------------------------------------------------
+   There are multiple repeated `.product-card` / `.product-media` blocks
+   earlier in this stylesheet which caused inconsistent visuals. This
+   block centralizes the intended visual contract for product cards and
+   safely overrides duplicates using focused rules and minimal
+   !important usage so other layout rules remain intact.
+   - keeps card flexible and responsive
+   - consistent border-radius, shadow, and hover behavior
+   - images fill their media container while preserving aspect ratio
+------------------------------------------------------------------- */
+.product-card {
+  position: relative !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08) !important;
+  border: 2px solid transparent !important;
+  transition: transform .3s ease, box-shadow .3s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  max-width: 360px !important; /* cap card width so grid remains balanced */
+}
+.product-card::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 0 0 auto !important;
+  width: 6px !important;
+  border-radius: 0 12px 12px 0 !important;
+  background: linear-gradient(180deg, #0D8442 0%, #D1CB29 100%) !important;
+  pointer-events: none !important;
+}
+.product-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 14px 32px rgba(13,132,66,.25) !important;
+  border-color: #0D8442 !important;
+}
+
+.product-media,
+.prd-img,
+.product-image {
+  width: 100% !important;
+  border-radius: 12px 12px 0 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+  background: #f5f5f5 !important;
+}
+.product-media img,
+.prd-img img,
+.product-image img {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: cover !important;
+  transition: transform .35s ease !important;
+}
+
+.product-body,
+.prd-description {
+  padding: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  flex: 1 1 auto !important;
+}
+
+@media (max-width: 768px) {
+  .product-card { max-width: 100% !important; }
+  .product-media, .prd-img, .product-image { border-radius: 10px !important; }
+}
+
+
+/* ------------------------------------------------------------------
    Make product images responsive: scale to their container width.
    Images will fill the container's width (up to a sensible cap) and
    keep their intrinsic aspect ratio. Containers that enforce a square
@@ -2713,4 +2856,206 @@ html { font-size: clamp(14px, 0.9vw, 16px); }
     height: auto;
   }
 }
+
+/* ================== Admin Dashboard Styles ================== */
+.admin-dashboard {
+  padding: 24px 18px;
+  background: linear-gradient(180deg, #f8f6f4 0%, #fff 100%);
+  min-height: calc(100vh - 140px);
+}
+.dashboard-container { max-width: 1200px; margin: 0 auto; }
+.dashboard-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+.dashboard-header h1 { margin:0; font-size:clamp(1.4rem, 2.5vw, 2rem); color:#825221; }
+.dashboard-actions { display:flex; gap:8px; align-items:center; }
+.dashboard-actions .btn { padding:10px 14px; font-weight:800; }
+
+.dashboard-stats { margin-bottom:18px; }
+.dashboard-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; }
+.dashboard-card-link { text-decoration:none; color:inherit; }
+.stat-card { background:#fff; border-radius:12px; padding:12px; display:flex; gap:12px; align-items:center; box-shadow:0 6px 18px rgba(0,0,0,0.06); border-left:6px solid #0D8442; transition: transform .18s; }
+.stat-card:hover { transform: translateY(-4px); }
+.stat-icon { font-size:1.6rem; width:46px; height:46px; display:flex; align-items:center; justify-content:center; border-radius:10px; background:linear-gradient(135deg,#f1f8f4,#eef7ef); color:#0D8442; }
+.stat-body { display:flex; flex-direction:column; }
+.stat-title { font-size:0.95rem; color:#666; }
+.stat-value { font-size:1.4rem; font-weight:900; color:#333; margin-top:6px; }
+
+.dashboard-charts { margin-bottom:20px; }
+.charts-panel { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.chart-card { padding:12px; background:#fff; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.06); }
+.chart-title { margin:0 0 8px 0; font-size:1rem; color:#825221; }
+.chart-wrap { height:160px; }
+
+.recent-orders { margin-bottom:28px; }
+.recent-orders h2 { margin-bottom:12px; }
+.admin-table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.06); }
+.admin-table thead { background:linear-gradient(135deg,#0D8442 0%, #0a6b35 100%); color:#fff; }
+.admin-table th, .admin-table td { padding:12px 10px; text-align:center; border-bottom:1px solid #f0f0f0; }
+.admin-table tbody tr:hover { background:#fbfeff; }
+
+@media (max-width: 900px) {
+  .charts-panel { grid-template-columns: 1fr; }
+  .chart-wrap { height:220px; }
+}
+
+@media (max-width: 640px) {
+  .dashboard-header { flex-direction:column; align-items:stretch; }
+  .dashboard-actions { justify-content:stretch; }
+  .dashboard-actions .btn { width:100%; }
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 420px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* Order list / badges / actions */
+.orders-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.orders-header h1 { margin:0; font-size:1.4rem; color:#825221; }
+.orders-toolbar { display:flex; gap:8px; align-items:center; }
+.orders-toolbar .search-box.small { padding:4px 8px; border-radius:8px; border:1px solid #e6e6e6; background:#fff; display:flex; gap:6px; align-items:center; }
+.orders-toolbar .search-box.small input { border:0; outline:0; width:220px; }
+.orders-toolbar select { padding:6px 10px; border-radius:8px; border:1px solid #e6e6e6; background:#fff; }
+
+.orders-table td.nowrap { white-space:nowrap; }
+.order-actions { display:flex; gap:6px; justify-content:flex-end; align-items:center; }
+.order-actions .btn { padding:6px 8px; }
+
+.badge { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:800; font-size:0.85rem; color:#fff; }
+.badge--pending { background: #ffc107; color: #3a2e00; }
+.badge--confirmed { background: #0d6efd; }
+.badge--processing { background: #6f42c1; }
+.badge--shipped { background: #17a2b8; }
+.badge--delivered { background: #28a745; }
+.badge--cancelled { background: #dc3545; }
+
+.badge--payment-paid { background: linear-gradient(90deg,#0D8442,#1e7e34); }
+.badge--payment-pending { background: #ffc107; color:#3a2e00; }
+.badge--payment-failed { background: #dc3545; }
+
+/* small utility */
+.muted { color:#666; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cairo', monospace; }
+.small { font-size:0.85rem; }
+
+@media (max-width: 720px) {
+  .orders-toolbar .search-box.small input { width:120px; }
+  .orders-toolbar { gap:6px; }
+}
+
+/* ===== Order detail / My Orders merged styles =====
+   (migrated from public/css/order-detail.css to reduce requests)
+*/
+.orders-content { padding: 2rem 0; }
+.orders-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.order-header-card{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0;border-bottom:1px solid rgba(13,132,66,0.06)}
+.order-number{font-size:1.25rem;display:flex;align-items:center;gap:.5rem;color:var(--primary)}
+.btn-icon{background:transparent;border:0;padding:.25rem .5rem;cursor:pointer;color:var(--muted)}
+.btn-icon.copied{color:var(--success)}
+.order-actions{display:flex;align-items:center;gap:.75rem}
+.header-cta .btn{margin-left:.4rem}
+
+.order-grid{display:grid;grid-template-columns:1fr 320px;gap:1.25rem;margin-top:1rem}
+.order-section{min-width:0}
+.order-sidebar{width:100%}
+.section-card{background:#fff;border:1px solid rgba(13,132,66,0.06);padding:1rem;border-radius:8px;margin-bottom:1rem}
+.section-card h2{margin:0 0 .75rem;font-size:1rem;display:flex;align-items:center;gap:.5rem;color:var(--primary)}
+
+.order-items-list{display:flex;flex-direction:column;gap:.75rem}
+.order-item-detail{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px dashed rgba(0,0,0,0.04)}
+.order-item-detail:last-child{border-bottom:none}
+.order-item-detail .media img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid rgba(0,0,0,0.04)}
+.item-info{flex:1;min-width:0}
+.item-name{margin:0 0 .25rem;font-size:.98rem}
+.item-meta{color:var(--muted);display:flex;gap:1rem;font-size:.9rem}
+.item-total{min-width:90px;text-align:right;font-weight:600}
+
+.order-summary-total{margin-top:.75rem;border-top:1px solid rgba(13,132,66,0.06);padding-top:.75rem}
+.summary-row{display:flex;justify-content:space-between;padding:.25rem 0}
+.total-row{font-weight:700}
+
+.notes-wrapper{position:relative}
+.notes-text{margin:0}
+.notes-text.clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;line-clamp:3}
+.notes-text.expanded{display:block;-webkit-line-clamp:unset;line-clamp:none}
+.read-more{background:transparent;border:0;color:var(--primary);cursor:pointer;margin-top:.5rem;padding:0}
+.read-more.small{font-size:.9rem}
+
+/* Buttons */
+.btn{display:inline-flex;gap:.5rem;align-items:center;padding:.6rem .9rem;border-radius:10px;border:1px solid rgba(13,132,66,0.08);background:#fff;color:#333;text-decoration:none}
+.btn-outline{background:transparent;border:1px solid rgba(13,132,66,0.12);color:var(--primary)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-cancel{background:#d9534f;color:#fff;border:0}
+.btn-block{display:block;width:100%}
+
+/* Toast */
+.toast { position: fixed; right: 20px; top: 20px; background: rgba(0,0,0,0.85); color: #fff; padding: .8rem 1rem; border-radius: 8px; z-index: 3000; box-shadow: 0 8px 24px rgba(13,132,66,0.15); opacity:0; transform: translateY(-8px); transition: all .22s ease; }
+.toast.show { opacity: 1; transform: translateY(0); }
+/* badge for cancelled state */
+.badge-cancelled { background:#fdecea; color:#842029; border:1px solid #f5c2c7; padding:.35rem .6rem; border-radius:999px; font-weight:800 }
+
+@media (max-width:900px){.order-grid{grid-template-columns:1fr}.order-actions{gap:.5rem}}
+
+/* My Orders list: smaller thumbnails */
+.orders-list .order-item-thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; }
+.orders-list .order-item-thumb { position: relative; display: inline-block; margin-left: .5rem; }
+.orders-list .order-item-thumb .item-qty { position: absolute; bottom: -6px; left: 0; background: rgba(0,0,0,0.7); color:#fff; font-size:.75rem; padding:2px 6px; border-radius:999px; }
+
+/* Visual polish for order cards (spacing, icons, subtle depth) */
+.section-card.order-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(12, 80, 45, 0.06);
+  border-left: 6px solid rgba(13,132,66,0.06);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  margin-bottom: 1rem;
+}
+.section-card.order-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 36px rgba(12,80,45,0.10);
+  border-left-color: rgba(13,132,66,0.28);
+}
+
+.order-card-header { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.order-info-item { display:flex; flex-direction:column; gap:4px; min-width:120px; }
+.order-info-label { color:var(--muted); font-size:0.85rem; display:flex; align-items:center; gap:6px; }
+.order-info-value { font-weight:900; color:#222; font-size:1.06rem; }
+.order-number { font-size:1.15rem; color:var(--primary); font-weight:900; }
+
+.order-card-body { display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; }
+.order-items-preview { display:flex; align-items:center; gap:8px; }
+.order-more-items { display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:6px; background:#f3f6f4; color:#556; font-weight:800; }
+
+.timeline-steps { display:flex; gap:10px; align-items:center; margin-top:8px; }
+.timeline-step { display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--muted); font-size:0.82rem; min-width:60px; }
+.timeline-step-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fff; border:1px solid rgba(0,0,0,0.04); color:var(--muted); transition: transform .12s ease, box-shadow .12s ease; }
+.timeline-step.completed .timeline-step-icon { background: linear-gradient(90deg,var(--primary),#1e7e34); color:#fff; border-color:transparent; box-shadow:0 8px 22px rgba(13,132,66,0.14); transform: scale(1.05); }
+.timeline-step.active .timeline-step-icon { transform: scale(1.12); box-shadow:0 10px 28px rgba(13,132,66,0.12); color:#0b3d2a; }
+
+.order-card-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; }
+.order-total { display:flex; flex-direction:column; gap:4px; }
+.order-total-label { color:var(--muted); font-size:0.9rem; }
+.order-total-amount { font-weight:900; color:#2b2b2b; font-size:1.05rem; }
+
+.order-actions { display:flex; gap:8px; align-items:center; }
+.order-actions .btn { padding:8px 12px; border-radius:8px; font-weight:800; }
+.btn-outline { border:1px solid rgba(13,132,66,0.12); background:transparent; color:var(--primary); }
+.btn-outline:hover { background: rgba(13,132,66,0.04); }
+.btn-invoice-order i, .btn-view-order i, .btn-cancel-order i { margin-inline-start:6px; }
+
+.orders-empty { text-align:center; padding:40px; background:transparent; color:var(--muted); }
+.orders-empty h2 { color:#825221; margin:12px 0; }
+
+@media (max-width:720px) {
+  .order-card-body { flex-direction:column; align-items:stretch; }
+  .order-info-item { min-width:90px; }
+}
+
+/* Upload progress UI */
+.upload-progress { width: 100%; height: 8px; background: #f1f3f2; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+.upload-progress .bar { height: 100%; width: 0%; background: linear-gradient(90deg,var(--primary), #1e7e34); transition: width .12s linear; }
+.upload-controls { display:flex; gap:8px; align-items:center; }
+.btn-upload { padding:6px 10px; font-size:0.9rem; border-radius:8px; }
+
+
 

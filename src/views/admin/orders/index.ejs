@@ -10,14 +10,37 @@
 <body>
   <%- include("../../partials/admin-header") %>
 
-  <main class="content admin-dashboard" style="padding:2rem;">
-    <div class="admin-container">
-      <h1>إدارة الطلبات (<%= orders.length %>)</h1>
+  <main class="content admin-dashboard">
+    <div class="admin-container dashboard-orders">
+      <header class="orders-header">
+        <h1>إدارة الطلبات <span class="muted">(<%= orders.length %>)</span></h1>
+        <div class="orders-toolbar">
+          <div class="search-box small">
+            <i class="fas fa-search"></i>
+            <input id="ordersSearch" type="search" placeholder="ابحث برقم الطلب أو اسم العميل...">
+          </div>
+          <select id="filterStatus">
+            <option value="all">الكل</option>
+            <option value="pending">قيد الانتظار</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="processing">قيد التحضير</option>
+            <option value="shipped">قيد الشحن</option>
+            <option value="delivered">تم التوصيل</option>
+            <option value="cancelled">ملغى</option>
+          </select>
+          <select id="filterPayment">
+            <option value="all">كل حالات الدفع</option>
+            <option value="paid">مدفوع</option>
+            <option value="pending">معلق</option>
+            <option value="failed">فشل</option>
+          </select>
+        </div>
+      </header>
 
       <div class="admin-card">
         <% if (orders && orders.length > 0) { %>
           <div class="table-responsive">
-            <table class="admin-table">
+            <table class="admin-table orders-table">
               <thead>
                 <tr>
                   <th>رقم الطلب</th>
@@ -31,40 +54,31 @@
               </thead>
               <tbody>
                 <% orders.forEach(order => { %>
-                  <tr>
-                    <td><strong><%= order.orderNumber %></strong></td>
+                  <tr data-status="<%= order.status %>" data-payment="<%= order.paymentStatus %>">
+                    <td class="mono"><strong>#<%= order.orderNumber %></strong></td>
                     <td>
-                      <%= order.user?.name %><br>
-                      <small><%= order.user?.phone %></small>
+                      <div class="order-customer"><%= order.user?.name || 'ضيف' %></div>
+                      <div class="muted small"><%= order.user?.phone || '' %></div>
                     </td>
-                    <td><%= order.totalAmount.toFixed(2) %> دج</td>
+                    <td class="nowrap"><%= order.totalAmount.toFixed(2) %> دج</td>
                     <td>
-                      <span class="badge badge-<%= order.status %>">
-                        <%= order.status === 'pending' ? 'قيد الانتظار' :
-                            order.status === 'confirmed' ? 'مؤكد' :
-                            order.status === 'processing' ? 'قيد التحضير' :
-                            order.status === 'shipped' ? 'قيد الشحن' :
-                            order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
-                      </span>
+                      <% const label = order.status === 'pending' ? 'قيد الانتظار' :
+                                   order.status === 'confirmed' ? 'مؤكد' :
+                                   order.status === 'processing' ? 'قيد التحضير' :
+                                   order.status === 'shipped' ? 'قيد الشحن' :
+                                   order.status === 'delivered' ? 'تم التوصيل' : 'ملغى'; %>
+                      <span class="badge badge--<%= order.status %>"><%= label %></span>
                     </td>
                     <td>
-                      <span class="badge badge-payment-<%= order.paymentStatus %>">
-                        <%= order.paymentStatus === 'paid' ? 'مدفوع' : 
-                            order.paymentStatus === 'failed' ? 'فشل' : 'معلق' %>
-                      </span>
+                      <% const pLabel = order.paymentStatus === 'paid' ? 'مدفوع' : (order.paymentStatus === 'failed' ? 'فشل' : 'معلق'); %>
+                      <span class="badge badge--payment-<%= order.paymentStatus %>"><%= pLabel %></span>
                     </td>
-                    <td><%= new Date(order.createdAt).toLocaleDateString('ar-DZ') %></td>
-                    <td class="actions">
-                      <a href="/orders/<%= order._id %>" class="btn btn-info btn-sm">
-                        <i class="fas fa-eye"></i>
-                      </a>
-                      <button onclick="updateStatus('<%= order._id %>', '<%= order.status %>')" class="btn btn-edit btn-sm">
-                        <i class="fas fa-edit"></i>
-                      </button>
+                    <td class="muted small"><%= new Date(order.createdAt).toLocaleString('ar-EG-u-nu-latn') %></td>
+                    <td class="order-actions">
+                      <a href="/orders/<%= order._id %>" class="btn btn-sm btn-info" title="عرض"><i class="fas fa-eye"></i></a>
+                      <button onclick="updateStatus('<%= order._id %>', '<%= order.status %>')" class="btn btn-sm btn-edit" title="تحديث الحالة"><i class="fas fa-edit"></i></button>
                       <form action="/orders/<%= order._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطلب؟')">
-                        <button type="submit" class="btn btn-delete btn-sm">
-                          <i class="fas fa-trash"></i>
-                        </button>
+                        <button type="submit" class="btn btn-sm btn-delete" title="حذف"><i class="fas fa-trash"></i></button>
                       </form>
                     </td>
                   </tr>
@@ -117,6 +131,36 @@
     function closeModal() {
       document.getElementById('statusModal').style.display = 'none';
     }
+
+    // Client-side live filtering for orders table: search, status and payment
+    document.addEventListener('DOMContentLoaded', function () {
+      const table = document.querySelector('.orders-table');
+      if (!table) return;
+      const rows = Array.from(table.querySelectorAll('tbody tr'));
+      const search = document.getElementById('ordersSearch');
+      const statusSel = document.getElementById('filterStatus');
+      const paySel = document.getElementById('filterPayment');
+
+      function applyFilters() {
+        const q = (search && search.value || '').trim().toLowerCase();
+        const status = statusSel ? statusSel.value : 'all';
+        const payment = paySel ? paySel.value : 'all';
+
+        rows.forEach(r => {
+          const cust = (r.querySelector('.order-customer')?.textContent || '').toLowerCase();
+          const orderNum = (r.querySelector('.mono')?.textContent || '').toLowerCase();
+          const text = cust + ' ' + orderNum;
+          const matchesQ = q === '' || text.includes(q);
+          const matchesStatus = status === 'all' || r.dataset.status === status;
+          const matchesPayment = payment === 'all' || r.dataset.payment === payment;
+          r.style.display = (matchesQ && matchesStatus && matchesPayment) ? '' : 'none';
+        });
+      }
+
+      if (search) search.addEventListener('input', applyFilters);
+      if (statusSel) statusSel.addEventListener('change', applyFilters);
+      if (paySel) paySel.addEventListener('change', applyFilters);
+    });
   </script>
 </body>
 </html>

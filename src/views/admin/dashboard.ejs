@@ -9,54 +9,63 @@
 <body>
   <%- include('../partials/top-header') %>
 
-  <main class="content admin-dashboard" style="padding:2rem;">
-    <div class="container">
-      <h1 style="margin-bottom:1rem;">لوحة التحكم</h1>
-
-      <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
-        <div style="flex:1;">
-          <div class="dashboard-grid" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
-            <a href="/admin/products" class="dashboard-card-link">
-              <div class="card">
-                <h3>المنتجات</h3>
-                <p class="large"><%= productsCount %></p>
-              </div>
-            </a>
-
-            <a href="/admin/users" class="dashboard-card-link">
-              <div class="card">
-                <h3>المستخدمون</h3>
-                <p class="large"><%= usersCount %></p>
-              </div>
-            </a>
-
-            <a href="/admin/orders" class="dashboard-card-link">
-              <div class="card">
-                <h3>الطلبات</h3>
-                <p class="large"><%= ordersCount %></p>
-              </div>
-            </a>
-
-            <a href="/admin/orders" class="dashboard-card-link">
-              <div class="card">
-                <h3>الإيرادات (مدفوعة)</h3>
-                <p class="large"><%= totalRevenue.toFixed(2) %> دج</p>
-              </div>
-            </a>
-          </div>
+  <main class="content admin-dashboard">
+    <div class="dashboard-container">
+      <header class="dashboard-header">
+        <h1>لوحة التحكم</h1>
+        <div class="dashboard-actions">
+          <a href="/admin/products/create" class="btn btn-primary">إنشاء منتج</a>
+          <a href="/admin/orders" class="btn btn-secondary">عرض الطلبات</a>
+          <a href="/admin/products" class="btn btn-light">جميع المنتجات</a>
         </div>
-        <div style="min-width:220px; display:flex; flex-direction:column; gap:.5rem;">
-          <a href="/admin/products/create" class="btn btn-primary" style="text-align:center;">إنشاء منتج</a>
-          <a href="/admin/orders" class="btn btn-secondary" style="text-align:center;">عرض الطلبات</a>
-          <a href="/admin/products" class="btn" style="text-align:center;">جميع المنتجات</a>
-        </div>
-      </div>
+      </header>
 
-      <div id="chartsPanelWrapper" style="margin-bottom:1.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem;">
-          <h3 style="margin:0;">مخططات آخر 7 أيام</h3>
-        </div>
+      <section class="dashboard-stats">
+        <div class="dashboard-grid">
+          <a href="/admin/products" class="dashboard-card-link">
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <div class="stat-body">
+                <div class="stat-title">المنتجات</div>
+                <div class="stat-value"><%= productsCount %></div>
+              </div>
+            </div>
+          </a>
 
+          <a href="/admin/users" class="dashboard-card-link">
+            <div class="stat-card">
+              <div class="stat-icon">👥</div>
+              <div class="stat-body">
+                <div class="stat-title">المستخدمون</div>
+                <div class="stat-value"><%= usersCount %></div>
+              </div>
+            </div>
+          </a>
+
+          <a href="/admin/orders" class="dashboard-card-link">
+            <div class="stat-card">
+              <div class="stat-icon">🧾</div>
+              <div class="stat-body">
+                <div class="stat-title">الطلبات</div>
+                <div class="stat-value"><%= ordersCount %></div>
+              </div>
+            </div>
+          </a>
+
+          <a href="/admin/orders" class="dashboard-card-link">
+            <div class="stat-card">
+              <div class="stat-icon">💰</div>
+              <div class="stat-body">
+                <div class="stat-title">الإيرادات (مدفوعة)</div>
+                <div class="stat-value"><%= totalRevenue.toFixed(2) %> دج</div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="dashboard-charts">
+        <h3>مخططات آخر 7 أيام</h3>
         <div id="chartsPanel" class="charts-panel">
           <div class="card chart-card">
             <h4 class="chart-title">الطلبات</h4>
@@ -67,12 +76,13 @@
             <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
           </div>
         </div>
-      </div>
-      <section>
+      </section>
+
+      <section class="recent-orders">
         <h2>أحدث الطلبات</h2>
         <% if (recentOrders && recentOrders.length) { %>
           <div class="table-container">
-            <table>
+            <table class="admin-table">
               <thead>
                 <tr>
                   <th>رقم الطلب</th>

@@ -24,7 +24,11 @@
 
       <div class="order-header-card">
         <div class="order-info">
-          <h1>طلب رقم: <%= order.orderNumber %></h1>
+          <h1 class="order-number">طلب رقم: <span id="orderNumber"><%= order.orderNumber %></span>
+            <button class="btn-icon" id="copyOrderBtn" title="نسخ رقم الطلب">
+              <i class="fas fa-copy"></i>
+            </button>
+          </h1>
           <p class="order-date">
             <i class="fas fa-calendar"></i>
             <%= new Date(order.createdAt).toLocaleDateString('ar-MA', { 
@@ -33,37 +37,58 @@
             }) %>
           </p>
         </div>
-        <span class="badge badge-<%= order.status %> badge-xl">
-          <%= order.status === 'pending' ? 'قيد الانتظار' :
-              order.status === 'confirmed' ? 'مؤكد' :
-              order.status === 'processing' ? 'قيد التحضير' :
-              order.status === 'shipped' ? 'قيد الشحن' :
-              order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
-        </span>
+
+        <div class="order-actions">
+          <span class="badge badge-<%= order.status %> badge-xl">
+            <%= order.status === 'pending' ? 'قيد الانتظار' :
+                order.status === 'confirmed' ? 'مؤكد' :
+                order.status === 'processing' ? 'قيد التحضير' :
+                order.status === 'shipped' ? 'قيد الشحن' :
+                order.status === 'delivered' ? 'تم التوصيل' : 'ملغى' %>
+          </span>
+          <div class="header-cta">
+            <button id="invoiceBtn" class="btn btn-outline" data-order-id="<%= order._id %>">
+              <i class="fas fa-file-invoice"></i> فاتورة
+            </button>
+            <button id="printBtn" class="btn btn-outline">
+              <i class="fas fa-print"></i> طباعة
+            </button>
+            <div class="upload-controls" style="display:inline-flex;align-items:center;">
+              <input id="invoiceFile" type="file" accept="application/pdf" style="display:none" />
+              <button id="uploadBtn" class="btn btn-outline btn-upload">
+                <i class="fas fa-upload"></i> رفع فاتورة
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="order-grid">
-        <!-- Order Items -->
+        <!-- Main column: items + summary -->
         <div class="order-section">
           <div class="section-card">
             <h2><i class="fas fa-shopping-bag"></i> المنتجات</h2>
             <div class="order-items-list">
               <% order.items.forEach(item => { %>
                 <div class="order-item-detail">
-                  <% if (item.image) { const base = item.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
-                    <img src="<%= item.image %>" alt="<%= item.name %>"
-                      srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
-                      sizes="(max-width:480px) 30vw, 120px">
-                  <% } else { %>
-                    <img src="/images/default-product.svg" alt="<%= item.name %>">
-                  <% } %>
+                  <div class="media">
+                    <% if (item.image) { const base = item.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
+                      <img src="<%= item.image %>" alt="<%= item.name %>"
+                        srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
+                        sizes="(max-width:480px) 30vw, 120px">
+                    <% } else { %>
+                      <img src="/images/default-product.svg" alt="<%= item.name %>">
+                    <% } %>
+                  </div>
                   <div class="item-info">
-                    <h4><%= item.name %></h4>
-                    <p class="item-quantity">الكمية: <%= item.quantity %></p>
-                    <p class="item-price"><%= item.price.toFixed(2) %> درهم</p>
+                    <h4 class="item-name"><%= item.name %></h4>
+                    <p class="item-meta">
+                      <span class="item-quantity">الكمية: <%= item.quantity %></span>
+                      <span class="item-price"><%= item.price.toFixed(2) %> د.م</span>
+                    </p>
                   </div>
                   <div class="item-total">
-                    <strong><%= (item.price * item.quantity).toFixed(2) %> درهم</strong>
+                    <strong><%= (item.price * item.quantity).toFixed(2) %> د.م</strong>
                   </div>
                 </div>
               <% }) %>
@@ -107,8 +132,8 @@
           </div>
         </div>
 
-        <!-- Shipping Info -->
-        <div class="order-sidebar">
+        <!-- Sidebar: shipping, payment, notes -->
+        <aside class="order-sidebar">
           <div class="section-card">
             <h2><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h2>
             <div class="shipping-info">
@@ -123,9 +148,12 @@
           </div>
 
           <% if (order.notes) { %>
-            <div class="section-card">
+            <div class="section-card notes-card">
               <h2><i class="fas fa-comment"></i> ملاحظات</h2>
-              <p class="notes-text"><%= order.notes %></p>
+              <div class="notes-wrapper">
+                <p class="notes-text clamp"><%= order.notes %></p>
+                <button class="read-more small" aria-expanded="false">قراءة المزيد</button>
+              </div>
             </div>
           <% } %>
 
@@ -142,7 +170,7 @@
 
           <% if (order.status === 'pending' || order.status === 'confirmed') { %>
             <div class="section-card">
-              <button onclick="cancelOrder()" class="btn btn-cancel btn-block">
+              <button id="cancelBtn" onclick="cancelOrder()" class="btn btn-cancel btn-block">
                 <i class="fas fa-times-circle"></i> إلغاء الطلب
               </button>
             </div>
@@ -163,16 +191,191 @@
 
   <%- include("../partials/footer") %>
 
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
   <script>
-    function cancelOrder() {
-      if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟\nلن تتمكن من التراجع عن هذا الإجراء.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/orders/<%= order._id %>/cancel';
-        document.body.appendChild(form);
-        form.submit();
+    // AJAX cancel: posts to server and updates UI without reload
+    async function cancelOrder() {
+      if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟\nلن تتمكن من التراجع عن هذا الإجراء.')) return;
+      const btn = document.getElementById('cancelBtn');
+      if (!btn) return;
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإلغاء...';
+
+      try {
+        const res = await fetch('/orders/<%= order._id %>/cancel', {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin'
+        });
+
+        if (!res.ok) throw new Error('فشل في إلغاء الطلب');
+
+        // Update badge and disable button
+        const badge = document.querySelector('.order-actions .badge');
+        if (badge) {
+          badge.textContent = 'ملغى';
+          badge.classList.add('badge-cancelled');
+        }
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> تم الإلغاء';
+        showToast('تم إلغاء الطلب بنجاح');
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        showToast('حدث خطأ أثناء إلغاء الطلب', true);
       }
     }
+
+    // small client-side helpers: copy order ID and notes toggle
+    function showToast(message, isError) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = message;
+      t.style.background = isError ? 'rgba(220,53,69,0.95)' : 'rgba(13,132,66,0.95)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const copyBtn = document.getElementById('copyOrderBtn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+          const id = document.getElementById('orderNumber')?.textContent || '';
+          if (!id) return;
+          navigator.clipboard?.writeText(id.trim()).then(() => {
+            copyBtn.classList.add('copied');
+            setTimeout(() => copyBtn.classList.remove('copied'), 1500);
+          }).catch(() => {
+            alert('تم نسخ رقم الطلب: ' + id);
+          });
+        });
+      }
+
+      // Invoice download via fetch + blob
+      const invoiceBtn = document.getElementById('invoiceBtn');
+      if (invoiceBtn) {
+        invoiceBtn.addEventListener('click', async function (e) {
+          const id = invoiceBtn.dataset.orderId;
+          if (!id) return;
+          invoiceBtn.disabled = true;
+          const prev = invoiceBtn.innerHTML;
+          invoiceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+          try {
+            const res = await fetch('/orders/' + id + '/invoice', {
+              method: 'GET',
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+              credentials: 'same-origin'
+            });
+            if (!res.ok) {
+              let msg = 'فشل تحميل الفاتورة';
+              try { const j = await res.json(); if (j && j.message) msg = j.message; } catch(e){}
+              throw new Error(msg);
+            }
+            const blob = await res.blob();
+            // determine filename from Content-Disposition
+            let filename = 'invoice-<%= order.orderNumber %>.pdf';
+            const cd = res.headers.get('Content-Disposition') || res.headers.get('content-disposition');
+            if (cd) {
+              const m = cd.match(/filename\*=UTF-8''([^;\n]+)/i) || cd.match(/filename="?([^";\n]+)"?/i);
+              if (m && m[1]) filename = decodeURIComponent(m[1]);
+            }
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            showToast('تم تنزيل الفاتورة');
+          } catch (err) {
+            console.error(err);
+            showToast(err.message || 'حدث خطأ أثناء تنزيل الفاتورة', true);
+          } finally {
+            invoiceBtn.disabled = false;
+            invoiceBtn.innerHTML = prev;
+          }
+        });
+      }
+
+      // Print button uses window.print but keep it accessible via JS
+      const printBtn = document.getElementById('printBtn');
+      if (printBtn) printBtn.addEventListener('click', () => window.print());
+
+      // Invoice upload (order-detail)
+      const uploadBtn = document.getElementById('uploadBtn');
+      const fileInput = document.getElementById('invoiceFile');
+      if (uploadBtn && fileInput) {
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function () {
+          const f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          if (f.type !== 'application/pdf') { showToast('يرجى اختيار ملف PDF فقط', true); return; }
+          // create progress bar
+          let prog = document.getElementById('uploadProgressDetail');
+          if (!prog) {
+            prog = document.createElement('div'); prog.id = 'uploadProgressDetail'; prog.className = 'upload-progress';
+            const bar = document.createElement('div'); bar.className = 'bar'; prog.appendChild(bar);
+            uploadBtn.parentNode.appendChild(prog);
+          }
+          const bar = prog.querySelector('.bar');
+          // xhr upload
+          const id = '<%= order._id %>';
+          const xhr = new XMLHttpRequest();
+          const fd = new FormData(); fd.append('invoice', f);
+          xhr.open('POST', '/orders/' + id + '/invoice', true);
+          xhr.withCredentials = true;
+          xhr.upload.onprogress = function (e) { if (e.lengthComputable) { const pct = Math.round((e.loaded / e.total) * 100); bar.style.width = pct + '%'; } };
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const json = JSON.parse(xhr.responseText);
+                if (json && json.success) {
+                  showToast('تم رفع الفاتورة');
+                  // show download link/button
+                  let dl = document.getElementById('downloadInvoiceLink');
+                  if (!dl) {
+                    dl = document.createElement('a'); dl.id = 'downloadInvoiceLink'; dl.className = 'btn btn-outline'; dl.style.marginLeft = '8px';
+                    dl.innerHTML = '<i class="fas fa-download"></i> تحميل الفاتورة';
+                    uploadBtn.parentNode.insertBefore(dl, prog.nextSibling);
+                  }
+                  dl.href = json.url || ('/orders/' + id + '/invoice');
+                  dl.target = '_blank';
+                  dl.rel = 'noopener noreferrer';
+                  try { window.open(dl.href, '_blank'); } catch(e) { /* noop */ }
+                } else {
+                  showToast((json && json.message) || 'حدث خطأ أثناء رفع الفاتورة', true);
+                }
+              } catch (err) { showToast('فشل في قراءة استجابة الخادم', true); }
+            } else {
+              showToast('فشل رفع الفاتورة', true);
+            }
+            // reset
+            setTimeout(() => { if (bar) bar.style.width = '0%'; }, 800);
+            fileInput.value = '';
+          };
+          xhr.onerror = function () { showToast('خطأ في شبكة الاتصال', true); fileInput.value = ''; };
+          xhr.send(fd);
+        });
+      }
+
+      // Notes read-more toggle
+      const notesWrapper = document.querySelector('.notes-wrapper');
+      if (notesWrapper) {
+        const btn = notesWrapper.querySelector('.read-more');
+        const note = notesWrapper.querySelector('.notes-text');
+        if (btn && note) {
+          btn.addEventListener('click', function () {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', (!expanded).toString());
+            note.classList.toggle('expanded');
+            btn.textContent = expanded ? 'قراءة المزيد' : 'عرض أقل';
+          });
+        }
+      }
+    });
   </script>
 </body>
 </html>

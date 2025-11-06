@@ -20,10 +20,28 @@
         <p>تتبع وإدارة جميع طلباتك</p>
       </div>
 
+      <div class="orders-toolbar" style="margin-bottom:1rem;">
+        <div class="search-box small" style="display:flex;align-items:center;gap:.5rem;">
+          <i class="fas fa-search"></i>
+          <input id="ordersSearch" type="search" placeholder="ابحث برقم الطلب أو المنتج..." />
+        </div>
+        <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center;">
+          <select id="filterStatus">
+            <option value="all">الحالة: الكل</option>
+            <option value="pending">قيد الانتظار</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="processing">قيد التحضير</option>
+            <option value="shipped">قيد الشحن</option>
+            <option value="delivered">تم التوصيل</option>
+            <option value="cancelled">ملغى</option>
+          </select>
+        </div>
+      </div>
+
       <% if (orders && orders.length > 0) { %>
         <div class="orders-list">
           <% orders.forEach(order => { %>
-            <div class="order-card">
+            <div class="section-card order-card" data-status="<%= order.status %>" data-order-number="<%= order.orderNumber %>">
               <div class="order-card-header">
                 <div class="order-info-item">
                   <span class="order-info-label">
@@ -129,17 +147,26 @@
                     </span>
                   </div>
                   <div class="order-actions">
-                    <a href="/orders/<%= order._id %>" class="btn-view-order">
+                    <a href="/orders/<%= order._id %>" class="btn btn-outline btn-view-order">
                       <i class="fas fa-eye"></i>
                       التفاصيل
                     </a>
+                    <button class="btn btn-outline btn-invoice-order" data-order-id="<%= order._id %>">
+                      <i class="fas fa-file-invoice"></i>
+                      فاتورة
+                    </button>
+                    <!-- Upload invoice control -->
+                    <input type="file" accept="application/pdf" class="invoice-file-input" data-order-id="<%= order._id %>" style="display:none" />
+                    <button class="btn btn-outline btn-upload-order" data-order-id="<%= order._id %>">
+                      <i class="fas fa-upload"></i>
+                      رفع
+                    </button>
+                    <div class="upload-progress" style="display:none"><div class="bar"></div></div>
                     <% if (order.status === 'pending' || order.status === 'confirmed') { %>
-                      <form method="POST" action="/orders/<%= order._id %>/cancel" style="display: inline;">
-                        <button type="submit" class="btn-cancel-order" onclick="return confirm('هل أنت متأكد من إلغاء هذا الطلب؟')">
-                          <i class="fas fa-times-circle"></i>
-                          إلغاء الطلب
-                        </button>
-                      </form>
+                      <button class="btn btn-cancel-order" data-order-id="<%= order._id %>">
+                        <i class="fas fa-times-circle"></i>
+                        إلغاء الطلب
+                      </button>
                     <% } %>
                   </div>
                 </div>
@@ -162,5 +189,149 @@
   </main>
 
   <%- include("../partials/footer") %>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    function showToast(message, isError) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = message;
+      t.style.background = isError ? 'rgba(220,53,69,0.95)' : 'rgba(13,132,66,0.95)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.btn-cancel-order').forEach(btn => {
+        btn.addEventListener('click', async function () {
+          const id = btn.dataset.orderId;
+          if (!id) return;
+          if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) return;
+          btn.disabled = true;
+          const prev = btn.innerHTML;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإلغاء...';
+          try {
+            const res = await fetch('/orders/' + id + '/cancel', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+            if (!res.ok) throw new Error('فشل في إلغاء الطلب');
+            // update badge and button
+            const card = btn.closest('.section-card');
+            const badge = card.querySelector('.badge');
+            if (badge) { badge.textContent = 'ملغى'; badge.classList.add('badge-cancelled'); }
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> تم الإلغاء';
+            showToast('تم إلغاء الطلب بنجاح');
+          } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = prev;
+            showToast('حدث خطأ أثناء إلغاء الطلب', true);
+          }
+        });
+      });
+
+      // Invoice download buttons on list
+      document.querySelectorAll('.btn-invoice-order').forEach(inv => {
+        inv.addEventListener('click', async function () {
+          const id = inv.dataset.orderId;
+          if (!id) return;
+          inv.disabled = true;
+          const prev = inv.innerHTML;
+          inv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+          try {
+            const res = await fetch('/orders/' + id + '/invoice', { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+            if (!res.ok) {
+              let msg = 'فشل تحميل الفاتورة';
+              try { const j = await res.json(); if (j && j.message) msg = j.message; } catch(e){}
+              throw new Error(msg);
+            }
+            const blob = await res.blob();
+            let filename = 'invoice-' + (inv.closest('.section-card')?.dataset.orderNumber || id) + '.pdf';
+            const cd = res.headers.get('Content-Disposition') || res.headers.get('content-disposition');
+            if (cd) {
+              const m = cd.match(/filename\*=UTF-8''([^;\n]+)/i) || cd.match(/filename="?([^";\n]+)"?/i);
+              if (m && m[1]) filename = decodeURIComponent(m[1]);
+            }
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+            showToast('تم تنزيل الفاتورة');
+          } catch (err) {
+            console.error(err);
+            showToast(err.message || 'حدث خطأ أثناء تنزيل الفاتورة', true);
+          } finally {
+            inv.disabled = false;
+            inv.innerHTML = prev;
+          }
+        });
+      });
+
+      // Invoice upload on list (per-card)
+      document.querySelectorAll('.btn-upload-order').forEach(btn => {
+        const orderId = btn.dataset.orderId;
+        const card = btn.closest('.section-card');
+        const input = card.querySelector('.invoice-file-input');
+        const progWrap = card.querySelector('.upload-progress');
+        const bar = progWrap ? progWrap.querySelector('.bar') : null;
+        btn.addEventListener('click', () => input && input.click());
+        if (input) {
+          input.addEventListener('change', function () {
+            const f = input.files && input.files[0];
+            if (!f) return;
+            if (f.type !== 'application/pdf') { showToast('يرجى اختيار ملف PDF فقط', true); input.value = ''; return; }
+            if (progWrap) progWrap.style.display = '';
+            if (bar) bar.style.width = '0%';
+            const xhr = new XMLHttpRequest();
+            const fd = new FormData(); fd.append('invoice', f);
+            xhr.open('POST', '/orders/' + orderId + '/invoice', true);
+            xhr.withCredentials = true;
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable && bar) { const pct = Math.round((e.loaded / e.total) * 100); bar.style.width = pct + '%'; } };
+            xhr.onload = function () {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const json = JSON.parse(xhr.responseText);
+                  if (json && json.success) {
+                    showToast('تم رفع الفاتورة');
+                    // insert or update download link
+                    let dl = card.querySelector('.download-invoice-link');
+                    if (!dl) {
+                      dl = document.createElement('a'); dl.className = 'download-invoice-link btn btn-outline'; dl.style.marginInlineStart = '6px'; dl.innerHTML = '<i class="fas fa-download"></i> تحميل';
+                      btn.parentNode.insertBefore(dl, btn.nextSibling);
+                    }
+                    dl.href = json.url || ('/orders/' + orderId + '/invoice');
+                    dl.target = '_blank';
+                    dl.rel = 'noopener noreferrer';
+                    try { window.open(dl.href, '_blank'); } catch(e) { /* noop */ }
+                  } else {
+                    showToast((json && json.message) || 'حدث خطأ أثناء رفع الفاتورة', true);
+                  }
+                } catch (err) { showToast('فشل في قراءة استجابة الخادم', true); }
+              } else {
+                showToast('فشل رفع الفاتورة', true);
+              }
+              setTimeout(() => { if (bar) bar.style.width = '0%'; if (progWrap) progWrap.style.display = 'none'; }, 900);
+              input.value = '';
+            };
+            xhr.onerror = function () { showToast('خطأ في شبكة الاتصال', true); input.value = ''; if (progWrap) progWrap.style.display = 'none'; };
+            xhr.send(fd);
+          });
+        }
+      });
+
+      // Client-side filtering (search + status)
+      const search = document.getElementById('ordersSearch');
+      const statusSel = document.getElementById('filterStatus');
+      const cards = Array.from(document.querySelectorAll('.section-card.order-card'));
+      function applyFilters() {
+        const q = (search?.value || '').trim().toLowerCase();
+        const status = statusSel ? statusSel.value : 'all';
+        cards.forEach(c => {
+          const number = (c.dataset.orderNumber || '').toLowerCase();
+          const matchesQ = q === '' || number.includes(q);
+          const matchesStatus = status === 'all' || c.dataset.status === status;
+          c.style.display = (matchesQ && matchesStatus) ? '' : 'none';
+        });
+      }
+      if (search) search.addEventListener('input', applyFilters);
+      if (statusSel) statusSel.addEventListener('change', applyFilters);
+    });
+  </script>
 </body>
 </html>

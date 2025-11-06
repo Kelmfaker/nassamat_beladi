@@ -13,10 +13,10 @@
     <div class="admin-container">
       <h1>إدارة المنتجات</h1>
 
-      <!-- Add new product form -->
-      <div class="admin-card">
-        <h2>إضافة منتج جديد</h2>
-  <form action="/admin/products" method="POST" class="admin-form" enctype="multipart/form-data">
+  <!-- Add new product form -->
+  <div class="admin-card">
+    <h2>إضافة منتج جديد</h2>
+  <form id="addForm" action="/admin/products" method="POST" class="admin-form" enctype="multipart/form-data">
           <div class="form-row">
             <div class="form-group">
               <label for="name">اسم المنتج *</label>
@@ -58,45 +58,52 @@
         </form>
       </div>
 
-      <!-- Products list -->
+      <!-- Products list: table view for admin control -->
       <div class="admin-card">
         <h2>المنتجات الحالية</h2>
         <% if (products && products.length > 0) { %>
-          <div class="products-grid">
-            <% products.forEach(product => { %>
-                <article class="product" data-product-id="<%= product._id %>"
-                  data-name="<%= (product.name||'').replace(/\"/g,'&quot;') %>"
-                  data-description="<%= (product.description||'').replace(/\"/g,'&quot;') %>"
-                  data-price="<%= product.price %>"
-                  data-category-id="<%= product.category?._id || '' %>"
-                  data-image="<%= product.image || '' %>"
-                  data-stock="<%= product.stock || 0 %>">
-                  <div class="prd-img">
-                    <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); const base = imgSrc.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
-                      <img src="<%= imgSrc %>" alt="<%= product.name %>"
-                        srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
-                        sizes="(max-width:480px) 80vw, (max-width:1024px) 40vw, 180px">
-                    <% } else { %>
-                      <img src="/images/default-product.svg" alt="<%= product.name %>">
-                    <% } %>
-                  </div>
-                  <div class="prd-description">
-                    <h3 class="prd-title"><%= product.name %></h3>
-                    <p class="category"><%= product.category?.name || 'بدون قسم' %></p>
-                    <p class="description"><%= product.description || '-' %></p>
-                    <div class="prices">
-                      <div class="new-price"><%= product.price %> دج</div>
-                    </div>
-                    <p class="stock">المخزون: <%= product.stock || 0 %></p>
-                    <div class="center-button">
-                      <button onclick="editProduct('<%= product._id %>')" class="btn btn-edit">تعديل</button>
-                      <form action="/admin/products/<%= product._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
+          <div class="table-container">
+            <table class="admin-products-table">
+              <thead>
+                <tr>
+                  <th>صورة</th>
+                  <th>الاسم</th>
+                  <th>القسم</th>
+                  <th>السعر</th>
+                  <th>المخزون</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% products.forEach(product => { %>
+          <tr data-product-id="<%= product._id %>"
+            data-name="<%= (product.name||'').replace(/\"/g,'&quot;') %>"
+            data-description="<%= (product.description||'').replace(/\"/g,'&quot;') %>"
+            data-price="<%= product.price %>"
+            data-category-id="<%= product.category?._id || '' %>"
+            data-image="<%= product.image || '' %>"
+            data-stock="<%= product.stock || 0 %>">
+                    <td class="td-img">
+                      <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
+                        <img src="<%= imgSrc %>" alt="<%= product.name %>" width="72" height="72" style="object-fit:cover;border-radius:6px;" />
+                      <% } else { %>
+                        <img src="/images/default-product.svg" alt="<%= product.name %>" width="72" height="72" style="object-fit:contain;border-radius:6px;background:#fff;padding:6px;" />
+                      <% } %>
+                    </td>
+                    <td class="td-name"><%= product.name %></td>
+                    <td class="td-cat"><%= product.category?.name || 'بدون قسم' %></td>
+                    <td class="td-price"><%= Number(product.price).toFixed(2) %> دج</td>
+                    <td class="td-stock"><%= product.stock || 0 %></td>
+                    <td class="td-actions">
+                      <button type="button" class="btn btn-edit" onclick="editProduct('<%= product._id %>')">تعديل</button>
+                      <form action="/admin/products/<%= product._id %>/delete" method="POST" style="display:inline;margin-left:.5rem;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
                         <button type="submit" class="btn btn-delete">حذف</button>
                       </form>
-                    </div>
-                  </div>
-                </article>
-            <% }) %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
           </div>
         <% } else { %>
           <p class="no-data">لا توجد منتجات حالياً</p>
@@ -198,55 +205,130 @@
       const modal = document.getElementById('editModal');
       if (event.target === modal) closeModal();
     }
+
+    // Read-more initialization for admin product descriptions
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.prd-desc').forEach(function (el) {
+        try {
+          const btn = el.parentElement.querySelector('.read-more');
+          if (!btn) return;
+          // If content doesn't overflow the clamped area, hide the button
+          if (el.scrollHeight <= el.clientHeight) {
+            btn.style.display = 'none';
+            return;
+          }
+
+          btn.style.display = 'inline-block';
+          btn.addEventListener('click', function () {
+            const isExpanded = el.classList.toggle('expanded');
+            btn.setAttribute('aria-expanded', isExpanded);
+            btn.textContent = isExpanded ? 'عرض أقل' : 'اقرأ المزيد';
+          });
+        } catch (e) {
+          // defensive: some browsers may not have computed sizes yet
+        }
+      });
+    });
   </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>إدارة المنتجات</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-  <%- include("../../partials/admin-header") %>
-  <main class="products-content">
-    <div class="products-container">
-      <div class="products-header">
-        <h1><i class="fas fa-boxes"></i> إدارة المنتجات</h1>
-        <p><a class="chip active" href="/admin/products/new">منتج جديد</a></p>
-      </div>
-      <div class="products-grid">
-        <% products.forEach(p => { %>
-          <article class="product" data-product-id="<%= p._id %>"
-            data-name="<%= (p.name||'').replace(/\"/g,'&quot;') %>"
-            data-description="<%= (p.description||'').replace(/\"/g,'&quot;') %>"
-            data-price="<%= p.price %>"
-            data-category-id="<%= p.category?._id || '' %>"
-            data-image="<%= p.image || '' %>"
-            data-stock="<%= p.stock || 0 %>">
-            <div class="prd-img">
-              <% if (p.image) { const base = p.image.replace(/\.(jpg|jpeg|png|webp)$/i, ''); %>
-                <img src="<%= p.image %>" alt=""
-                  srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w"
-                  sizes="(max-width:480px) 80vw, (max-width:1024px) 40vw, 180px">
-              <% } else { %>
-                <img src="/images/default-product.svg" alt="">
-              <% } %>
-            </div>
-            <div class="prd-description">
-              <h3 class="prd-title"><%= p.name %></h3>
-              <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> درهم</div></div>
-              <form method="POST" action="/admin/products/<%= p._id %>" enctype="multipart/form-data" class="center-button">
-                <input type="file" name="image" accept="image/*" required>
-                <button class="btn-add" type="submit"><i class="fas fa-upload"></i> تحديث الصورة</button>
-              </form>
-            </div>
-          </article>
-        <% }) %>
-      </div>
-    </div>
-  </main>
-  <%- include("../../partials/footer") %>
+  <script>
+    // Intercept delete forms in the admin products table and submit via fetch
+    document.addEventListener('DOMContentLoaded', function () {
+      const table = document.querySelector('.admin-products-table');
+      if (!table) return;
+
+      // Delegate submit for delete forms inside the table
+      table.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (form && form.tagName === 'FORM' && form.action && form.action.includes('/admin/products/') && form.action.endsWith('/delete')) {
+          e.preventDefault();
+          if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+
+          const row = form.closest('tr');
+          const action = form.action;
+
+          fetch(action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(form)
+          }).then(res => {
+            // If server returns JSON, try to parse success flag
+            if (res.headers.get('content-type') && res.headers.get('content-type').includes('application/json')) {
+              return res.json().then(j => ({ ok: res.ok, json: j }));
+            }
+            return { ok: res.ok };
+          }).then(result => {
+            if (result && (result.ok && (!result.json || result.json.success))) {
+              // Remove the row from the table to stay on same page
+              if (row) row.remove();
+              alert('تم حذف المنتج');
+            } else {
+              alert('حدث خطأ أثناء حذف المنتج');
+            }
+          }).catch(err => {
+            console.error(err);
+            alert('تعذر الاتصال بالخادم');
+          });
+        }
+      });
+
+      // Intercept edit form submission (modal) to submit via fetch and then refresh page
+      const editForm = document.getElementById('editForm');
+      if (editForm) {
+        editForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const action = editForm.action;
+          const fd = new FormData(editForm);
+
+          fetch(action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          }).then(res => {
+            if (res.ok) return res.json().catch(() => ({}));
+            throw new Error('Request failed');
+          }).then(json => {
+            // close modal
+            const modal = document.getElementById('editModal');
+            if (modal) modal.style.display = 'none';
+            // refresh page to reflect changes but stay on same admin page
+            location.reload();
+          }).catch(err => {
+            console.error(err);
+            alert('فشل حفظ التغييرات');
+          });
+        });
+      }
+
+      // Intercept add-product form submission to submit via AJAX and refresh listing
+      const addForm = document.getElementById('addForm');
+      if (addForm) {
+        addForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const action = addForm.action;
+          const fd = new FormData(addForm);
+          const submitBtn = addForm.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.disabled = true;
+
+          fetch(action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          }).then(res => {
+            if (res.ok) return res.json().catch(() => ({}));
+            throw new Error('Request failed');
+          }).then(json => {
+            // on success, reload the page to show the new product in the table
+            location.reload();
+          }).catch(err => {
+            console.error(err);
+            alert('فشل إضافة المنتج');
+          }).finally(() => { if (submitBtn) submitBtn.disabled = false; });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

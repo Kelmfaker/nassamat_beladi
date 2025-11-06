@@ -20,25 +20,66 @@
 </header>
 
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded', function () {
   const btn = document.getElementById('menu-toggle');
   const menu = document.getElementById('nav-links');
   if (!btn || !menu) return;
+
   const closeMenu = () => {
     menu.classList.remove('show');
     btn.classList.remove('active');
-    btn.setAttribute('aria-expanded','false');
+    btn.setAttribute('aria-expanded', 'false');
   };
-  btn.addEventListener('click', (e)=>{
-    e.stopPropagation();
+
+  const openMenu = () => {
+    menu.classList.add('show');
+    btn.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
+    // move focus to first link for keyboard users
+    const first = menu.querySelector('a');
+    if (first) first.focus();
+  };
+
+  const toggleMenu = (e) => {
+    // allow keyboard activation as well
+    if (e && e.type === 'keydown' && !(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar')) return;
+    e && e.preventDefault();
+    e && e.stopPropagation();
     const willOpen = !menu.classList.contains('show');
-    menu.classList.toggle('show', willOpen);
-    btn.classList.toggle('active', willOpen);
-    btn.setAttribute('aria-expanded', String(willOpen));
+    willOpen ? openMenu() : closeMenu();
+  };
+
+  btn.addEventListener('click', toggleMenu);
+  btn.addEventListener('keydown', toggleMenu);
+  // also listen to pointer/touch events to improve responsiveness on mobile
+  btn.addEventListener('pointerdown', function (e) {
+    try {
+      e.stopPropagation();
+      toggleMenu(e);
+    } catch (err) {
+      console.error('menu-toggle pointerdown error', err);
+    }
   });
-  document.addEventListener('click', (e)=>{
+
+  // Close when clicking outside or when a nav link is clicked
+  document.addEventListener('click', (e) => {
     if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
   });
-  window.addEventListener('scroll', closeMenu);
-})();
+
+  menu.addEventListener('click', (e) => {
+    const target = e.target.closest('a');
+    if (target) {
+      // close after navigation on small screens
+      closeMenu();
+    }
+  });
+
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') closeMenu();
+  });
+
+  // close on scroll to avoid overlaying content
+  window.addEventListener('scroll', closeMenu, { passive: true });
+});
 </script>

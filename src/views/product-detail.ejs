@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= product.name %> - نسمات بلادي</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <%- include("partials/header") %>
+
+  <main class="product-detail-page">
+    <div class="product-detail-grid">
+      <!-- Left: large main image -->
+      <div>
+        <div class="product-main-image">
+          <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
+            <img id="mainProductImage" src="<%= imgSrc %>" alt="<%= product.name %>">
+          <% } else { %>
+            <img id="mainProductImage" src="/images/default-product.svg" alt="<%= product.name %>">
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Middle: extra gallery / info (keeps layout balanced) -->
+      <div class="product-gallery">
+        <% if (product.images && product.images.length) { %>
+          <% product.images.forEach(img => { const src = img.startsWith('/') ? img : ('/images/' + img); %>
+            <div class="product-thumb"><img src="<%= src %>" loading="lazy" onclick="document.getElementById('mainProductImage').src=this.src"></div>
+          <% }) %>
+        <% } else { %>
+          <!-- fallback: show same image as thumb -->
+          <div class="product-thumb"><img src="<%= product.image ? (product.image.startsWith('/') ? product.image : ('/images/' + product.image)) : '/images/default-product.svg' %>" loading="lazy"></div>
+        <% } %>
+      </div>
+
+      <!-- Right: actions, title, description -->
+      <aside>
+        <div class="product-side-actions product-side">
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <button class="btn btn-primary" onclick="addToCart('<%= product._id %>',1)"><i class="fas fa-cart-plus icon" aria-hidden="true"></i>أضف للسلة</button>
+            <a href="#reviews" class="btn btn-secondary"><i class="fas fa-star icon" aria-hidden="true"></i>مراجعات</a>
+          </div>
+
+          <div>
+            <h1><%= product.name %></h1>
+            <div class="category"><%= product.category?.name || 'بدون قسم' %></div>
+            <div class="price"><%= Number(product.price).toFixed(2) %> دج</div>
+          </div>
+
+          <div>
+            <p class="prd-desc"><%= product.description || '-' %></p>
+            <button type="button" class="read-more" aria-expanded="false">اقرأ المزيد</button>
+          </div>
+
+          <div class="side-image-box">
+            <% if (product.image) { const imgSrc2 = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
+              <img src="<%= imgSrc2 %>" alt="<%= product.name %>">
+            <% } %>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Related products -->
+    <% if (relatedProducts && relatedProducts.length) { %>
+      <section style="margin-top:2rem">
+        <h3>منتجات مشابهة</h3>
+        <div class="products-grid" style="margin-top:1rem">
+          <% relatedProducts.forEach(p => { const img = p.image ? (p.image.startsWith('/') ? p.image : ('/images/' + p.image)) : '/images/default-product.svg'; %>
+            <div class="product">
+              <div class="prd-img"><img src="<%= img %>" alt="<%= p.name %>"></div>
+              <div class="prd-description">
+                <div class="prd-title"><%= p.name %></div>
+                <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> دج</div></div>
+                <a class="more" href="/products/<%= p._id %>">تفاصيل</a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+
+  </main>
+
+  <%- include("partials/footer") %>
+
+  <script>
+    // Add to cart (local storage) - same behaviour used elsewhere
+    function addToCart(productId, quantity) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existing = cart.find(item => item.productId === productId);
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        cart.push({
+          productId,
+          name: <%= JSON.stringify(product.name || '') %>,
+          price: <%= Number(product.price || 0) %>,
+          image: <%= JSON.stringify(product.image || '/images/default-product.svg') %>,
+          quantity
+        });
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert('تمت إضافة المنتج إلى السلة');
+    }
+
+    // Read-more toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const p = document.querySelector('.prd-desc');
+      const btn = document.querySelector('.read-more');
+      if (!p || !btn) return;
+      if (p.scrollHeight <= p.clientHeight + 2) btn.style.display = 'none';
+      btn.addEventListener('click', () => {
+        const expanded = p.classList.toggle('expanded');
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        btn.textContent = expanded ? 'عرض أقل' : 'اقرأ المزيد';
+      });
+    });
+  </script>
+</body>
+</html>
