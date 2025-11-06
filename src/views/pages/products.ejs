@@ -9,9 +9,9 @@
 <body>
 
    <% if (user && user.role === 'admin') { %>
-    <%- include("partials/admin-header") %>
+  <%- include("../partials/header") %>
   <% } else { %>
-    <%- include("partials/header") %>
+  <%- include("../partials/header") %>
   <% } %>
 
     <div class="content">

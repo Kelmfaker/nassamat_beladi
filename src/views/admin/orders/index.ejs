@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <%- include("../../partials/admin-header") %>
+  <%- include("../../partials/header") %>
 
   <main class="content admin-dashboard">
     <div class="admin-container dashboard-orders">
@@ -60,7 +60,7 @@
                       <div class="order-customer"><%= order.user?.name || 'ضيف' %></div>
                       <div class="muted small"><%= order.user?.phone || '' %></div>
                     </td>
-                    <td class="nowrap"><%= order.totalAmount.toFixed(2) %> دج</td>
+                    <td class="nowrap"><%= order.totalAmount.toFixed(2) %> <%= currencySymbol %></td>
                     <td>
                       <% const label = order.status === 'pending' ? 'قيد الانتظار' :
                                    order.status === 'confirmed' ? 'مؤكد' :

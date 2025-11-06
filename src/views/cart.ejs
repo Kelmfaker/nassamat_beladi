@@ -9,7 +9,7 @@
 </head>
 <body>
 
-    <%- include("partials/header") %>
+  <%- include("partials/header") %>
 
 
   <main class="cart-content">
@@ -36,7 +36,7 @@
           
           <div class="summary-row">
             <span>المجموع الفرعي:</span>
-            <span id="subtotal">0 دج</span>
+            <span id="subtotal">0 <%= currencySymbol %></span>
           </div>
           
           <div class="summary-row">
@@ -46,7 +46,7 @@
           
           <div class="summary-row total">
             <span>المجموع الكلي:</span>
-            <span id="total">0 دج</span>
+            <span id="total">0 <%= currencySymbol %></span>
           </div>
 
           <% if (user) { %>
@@ -169,7 +169,7 @@
           <div class="item-details">
             <h3>${item.name || 'منتج غير معروف'}</h3>
             ${item.category ? `<p class="item-category">${item.category}</p>` : ''}
-            <p class="item-price">${parseFloat(item.price || 0).toFixed(2)} دج</p>
+            <p class="item-price">${parseFloat(item.price || 0).toFixed(2)} <%= currencySymbol %></p>
             ${!item.available ? '<p class="item-error">غير متوفر بالكمية المطلوبة</p>' : ''}
           </div>
           <div class="item-quantity">
@@ -183,7 +183,7 @@
             </button>
           </div>
           <div class="item-total">
-            <p>${(parseFloat(item.price || 0) * parseInt(item.quantity || 1)).toFixed(2)} دج</p>
+            <p>${(parseFloat(item.price || 0) * parseInt(item.quantity || 1)).toFixed(2)} <%= currencySymbol %></p>
           </div>
           <div class="item-remove">
             <button onclick="removeItem('${item.productId}')" class="btn-remove">
@@ -243,8 +243,8 @@
       const shipping = 0; // Free shipping
       const total = subtotal + shipping;
 
-      document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' دج';
-      document.getElementById('total').textContent = total.toFixed(2) + ' دج';
+  document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' <%= currencySymbol %>';
+  document.getElementById('total').textContent = total.toFixed(2) + ' <%= currencySymbol %>';
     }
 
     function proceedToCheckout() {

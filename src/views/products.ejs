@@ -81,10 +81,10 @@
                 </td>
                 <td class="td-price">
                   <% if (product.discount && product.discount > 0) { %>
-                    <div class="old-price"><%= product.price.toFixed(2) %> دج</div>
-                    <div class="new-price"><%= (product.price * (1 - product.discount / 100)).toFixed(2) %> دج</div>
+                    <div class="old-price"><%= product.price.toFixed(2) %> <%= currencySymbol %></div>
+                    <div class="new-price"><%= (product.price * (1 - product.discount / 100)).toFixed(2) %> <%= currencySymbol %></div>
                   <% } else { %>
-                    <div class="new-price"><%= product.price.toFixed(2) %> دج</div>
+                    <div class="new-price"><%= product.price.toFixed(2) %> <%= currencySymbol %></div>
                   <% } %>
                 </td>
                 <td class="td-actions">

@@ -46,7 +46,7 @@
           <div>
             <h1><%= product.name %></h1>
             <div class="category"><%= product.category?.name || 'بدون قسم' %></div>
-            <div class="price"><%= Number(product.price).toFixed(2) %> دج</div>
+            <div class="price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></div>
           </div>
 
           <div>
@@ -73,7 +73,7 @@
               <div class="prd-img"><img src="<%= img %>" alt="<%= p.name %>"></div>
               <div class="prd-description">
                 <div class="prd-title"><%= p.name %></div>
-                <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> دج</div></div>
+                <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> <%= currencySymbol %></div></div>
                 <a class="more" href="/products/<%= p._id %>">تفاصيل</a>
               </div>
             </div>

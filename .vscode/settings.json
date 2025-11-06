@@ -1,0 +1,10 @@
+{
+  // Treat EJS files as HTML to avoid JS language server false positives inside templates
+  "files.associations": {
+    "*.ejs": "html"
+  },
+  // Enable Emmet in EJS files
+  "emmet.includeLanguages": {
+    "ejs": "html"
+  }
+}

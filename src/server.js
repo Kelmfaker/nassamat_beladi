@@ -92,8 +92,13 @@ app.use((req, res) => {
 
 // Error handler (guard headersSent)
 app.use((err, req, res, next) => {
-  console.error(err);
+  // Log full error and stack for debugging
+  console.error(err && err.stack ? err.stack : err);
   if (res.headersSent) return next(err);
+  // In development show the error stack in the response to help debugging.
+  if (process.env.NODE_ENV !== 'production') {
+    return res.status(500).send(`<pre style="white-space:pre-wrap;">${(err && err.stack) ? err.stack : String(err)}</pre>`);
+  }
   res.status(500).send("Internal Server Error");
 });
 

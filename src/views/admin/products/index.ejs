@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include("../../partials/admin-header") %>
+  <%- include("../../partials/header") %>
 
   <main class="content admin-dashboard" style="padding:2rem;">
     <div class="admin-container">
@@ -23,7 +23,7 @@
               <input type="text" id="name" name="name" required>
             </div>
             <div class="form-group">
-              <label for="price">السعر (دج) *</label>
+              <label for="price">السعر (<%= currencySymbol %>) *</label>
               <input type="number" id="price" name="price" step="0.01" min="0" required>
             </div>
           </div>
@@ -76,7 +76,7 @@
               </thead>
               <tbody>
                 <% products.forEach(product => { %>
-          <tr data-product-id="<%= product._id %>"
+              <tr data-product-id="<%= product._id %>"
             data-name="<%= (product.name||'').replace(/\"/g,'&quot;') %>"
             data-description="<%= (product.description||'').replace(/\"/g,'&quot;') %>"
             data-price="<%= product.price %>"
@@ -84,7 +84,7 @@
             data-image="<%= product.image || '' %>"
             data-stock="<%= product.stock || 0 %>">
                     <td class="td-img">
-                      <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
+                      <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/products' + product.image); %>
                         <img src="<%= imgSrc %>" alt="<%= product.name %>" width="72" height="72" style="object-fit:cover;border-radius:6px;" />
                       <% } else { %>
                         <img src="/images/default-product.svg" alt="<%= product.name %>" width="72" height="72" style="object-fit:contain;border-radius:6px;background:#fff;padding:6px;" />
@@ -92,7 +92,7 @@
                     </td>
                     <td class="td-name"><%= product.name %></td>
                     <td class="td-cat"><%= product.category?.name || 'بدون قسم' %></td>
-                    <td class="td-price"><%= Number(product.price).toFixed(2) %> دج</td>
+                    <td class="td-price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></td>
                     <td class="td-stock"><%= product.stock || 0 %></td>
                     <td class="td-actions">
                       <button type="button" class="btn btn-edit" onclick="editProduct('<%= product._id %>')">تعديل</button>
@@ -124,7 +124,7 @@
             <input type="text" id="edit-name" name="name" required>
           </div>
           <div class="form-group">
-            <label for="edit-price">السعر (دج) *</label>
+            <label for="edit-price">السعر (<%= currencySymbol %>) *</label>
             <input type="number" id="edit-price" name="price" step="0.01" min="0" required>
           </div>
         </div>

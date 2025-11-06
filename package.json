@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed:admin": "node scripts/make-admin.js"
+    "seed:admin": "node scripts/make-admin.js",
+    "generate:images": "node scripts/generate-image-variants.js"
   },
   "keywords": [],
   "author": "",

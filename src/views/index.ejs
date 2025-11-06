@@ -3,161 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>نسمات بلادي - الرئيسية</title>
+  <title>نسمات بلادي - الصفحة الرئيسية</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <% if (user && user.role === 'admin') { %>
-    <%- include("partials/admin-header") %>
-  <% } else { %>
-    <%- include("partials/header") %>
-  <% } %>
+  <%- include("partials/header") %>
 
-  <main class="home-content">
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-content">
-
-      
-
-        <h1>مرحباً بكم في نسمات بلادي</h1>
-        <p>اكتشف أفضل المنتجات التقليدية المغربية</p>
-        <a href="#products" class="btn btn-primary">تصفح المنتجات</a>
+  <section class="products-content">
+    <div class="products-container">
+      <div class="products-header">
+        <h1><i class="fas fa-seedling"></i> أحدث المنتجات</h1>
+        <p>تصفح تشكيلتنا المميزة من المنتجات الطبيعية</p>
       </div>
-    </section>
 
-    <!-- Products Section -->
-    <section id="products" class="products-section">
-      <div class="container">
-        <h2>منتجاتنا</h2>
-        
+      <div class="products-grid">
         <% if (products && products.length > 0) { %>
-          <div class="products-grid">
-            <% products.forEach(product => { %>
-              <div class="product-card horizontal">
-                <div class="product-image">
-                  <% if (product.image) { const base = (product.image.startsWith('/') ? product.image : ('/images/' + product.image)).replace(/\.(jpg|jpeg|png|webp)$/i, ''); const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
-                    <img src="<%= imgSrc %>" alt="<%= product.name %>" srcset="<%= base %>-sm.jpg 400w, <%= base %>-md.jpg 800w, <%= base %>-lg.jpg 1200w" sizes="(max-width:480px) 90vw, 360px">
-                  <% } else { %>
-                    <img src="/images/default-product.svg" alt="<%= product.name %>">
-                  <% } %>
-                  <% if (product.stock && product.stock < 5) { %>
-                    <span class="badge-stock">بقي <%= product.stock %> فقط</span>
-                  <% } %>
+          <% products.forEach(product => { %>
+            <article class="product-card">
+              <div class="product-media prd-img">
+                <% if (product.image) { %>
+                  <img src="<%= product.image.startsWith('/') ? product.image : ('/images/' + product.image) %>" alt="<%= product.name %>">
+                <% } else { %>
+                  <img src="/images/default-product.svg" alt="<%= product.name %>">
+                <% } %>
+              </div>
+              <div class="product-body">
+                <h3 class="product-title"><%= product.name %></h3>
+                <p class="prd-desc"><%= (product.description || '').length > 200 ? (product.description.slice(0,200) + '...') : product.description %></p>
+                <div class="product-price">
+                  <span class="new-price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></span>
                 </div>
-                <div class="product-info">
-                  <h3><%= product.name %></h3>
-                  <% if (product.category) { %>
-                    <p class="product-category"><%= product.category.name %></p>
-                  <% } %>
-                  <% if (product.description) { %>
-                    <p class="product-description prd-desc"><%= product.description %></p>
-                    <button type="button" class="read-more" aria-expanded="false">اقرأ المزيد</button>
-                  <% } %>
-                  <div class="product-footer">
-                    <p class="product-price"><%= product.price.toFixed(2) %> دج</p>
-                    <button 
-                      class="btn btn-cart"
-                      data-product-id="<%= product._id %>"
-                      data-name="<%= (product.name || '').replace(/"/g,'&quot;') %>"
-                      data-price="<%= product.price %>"
-                      data-image="<%= product.image || '/images/default-product.svg' %>"
-                      data-category="<%= product.category ? (product.category.name || '') : '' %>"
-                      onclick="addToCart(this.dataset.productId, this.dataset.name, Number(this.dataset.price), this.dataset.image, this.dataset.category)"
-                      <% if (!product.stock || product.stock === 0) { %>disabled<% } %>
-                    >
-                      <i class="fas fa-shopping-cart"></i>
-                      <% if (!product.stock || product.stock === 0) { %>
-                        غير متوفر
-                      <% } else { %>
-                        أضف للسلة
-                      <% } %>
-                    </button>
-                  </div>
+                <div class="product-cta">
+                  <button class="btn btn-sm btn-primary" onclick="addToCart('<%= product._id %>',1)">أضف إلى السلة</button>
+                  <a class="btn btn-sm btn-light" href="/products/<%= product._id %>">تفاصيل</a>
                 </div>
               </div>
-            <% }) %>
-          </div>
+            </article>
+          <% }) %>
         <% } else { %>
-          <div class="empty-state">
-            <i class="fas fa-box-open"></i>
-            <p>لا توجد منتجات متاحة حالياً</p>
-          </div>
+          <div style="text-align:center;padding:3rem;color:#666;">لا توجد منتجات حاليا</div>
         <% } %>
       </div>
-    </section>
 
-    <!-- Toast notification -->
-    <div id="toast" class="toast">
-      <i class="fas fa-check-circle"></i>
-      <span id="toast-message"></span>
     </div>
-  </main>
+  </section>
 
   <%- include("partials/footer") %>
 
   <script>
-    // Cart management
-    function addToCart(productId, name, price, image, category) {
-      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      
-      const existing = cart.find(item => item.productId === productId);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({ 
-          productId, 
-          name, 
-          price, 
-          image: image || '/images/default-product.svg',
-          category,
-          quantity: 1 
-        });
-      }
-      
-      localStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-      showToast('تم إضافة المنتج إلى السلة ✓');
+    function addToCart(productId, quantity) {
+      fetch('/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity })
+      }).then(r => r.json()).then(data => {
+        if (data.success) alert('تمت إضافة المنتج إلى السلة');
+      }).catch(e => console.error(e));
     }
-
-    function updateCartCount() {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const total = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const el = document.getElementById('cart-count');
-      if (el) el.textContent = total;
-    }
-
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-message');
-      toastMsg.textContent = message;
-      toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
-
-    // Initialize cart count on page load
-    document.addEventListener('DOMContentLoaded', updateCartCount);
-
-    // Read-more toggles for product descriptions on homepage
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.prd-desc').forEach(p => {
-        const btn = p.parentElement ? p.parentElement.querySelector('.read-more') : null;
-        if (!btn) return;
-        if (p.scrollHeight <= p.clientHeight + 1) {
-          btn.style.display = 'none';
-          return;
-        }
-        btn.addEventListener('click', () => {
-          const expanded = p.classList.toggle('expanded');
-          btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-          btn.textContent = expanded ? 'عرض أقل' : 'اقرأ المزيد';
-        });
-      });
-    });
   </script>
 </body>
 </html>

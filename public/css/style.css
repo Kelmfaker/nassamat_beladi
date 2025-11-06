@@ -1597,7 +1597,7 @@ tbody td button {
 
 /* Improve product-info spacing */
 .product-body { padding: 12px; }
-.product-title { font-size: 1rem; }
+.product-title { font-size: 1.15rem; }
 .price-current { font-size: 1.1rem; }
 
 @media (max-width: 768px) {
@@ -1756,7 +1756,7 @@ tbody td button {
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
-  .product-title { font-size: 1rem; }
+  .product-title { font-size: 1.05rem; }
   .price-current { font-size: 1.2rem; }
   .product-media { aspect-ratio: 4 / 3; }
 }
@@ -2495,17 +2495,17 @@ tbody td button {
  
   min-height: 380px; /* ensures uniform cards in grid */
   max-height: 460px; /* prevent cards from growing too tall */
-  padding: 20px; /* image and body control spacing */
-  gap: 8px;
+  padding: 10px; /* image and body control spacing */
+  gap: 4px;
   overflow: hidden; /* clip excessive content so cards remain consistent */
   border: 1px solid #dddee0;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 
 }
 
 .products-grid .product-media {
-  margin: 18px auto 8px;
+  margin: 10px auto 8px;
   width: var(--product-thumb-size) !important;
   height: var(--product-thumb-size) !important;
   border-radius: 12px;
@@ -2516,13 +2516,13 @@ tbody td button {
   padding: 12px 14px 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   flex: 1 1 auto;
 }
 
 .product-title {
   margin: 0 0 2px;
-  font-size: 0.5rem;
+  font-size: 1.2rem;
   line-height: 1.25;
   text-align: center;
 }
@@ -2530,7 +2530,7 @@ tbody td button {
 .product-cta {
   margin-top: auto;
   display: flex;
-  gap: .5rem;
+  gap: .3rem;
   justify-content: center;
   align-items: center;
 }
@@ -2539,7 +2539,7 @@ tbody td button {
   height: 10px;
   min-width: 20px;
   padding: 6px 10px;
-  font-size: 0.5rem;
+  font-size: 0.3rem;
   border-radius: 10px;
 }
 

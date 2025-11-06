@@ -1,33 +1,41 @@
-<header>
-  <nav>
-    <div class="logo">
-  <img src="/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" />
-    </div>
+<% 
+  // If the current user is an admin and we're on an admin route, render the admin header
+  // This lets templates include `partials/header` everywhere and the correct header
+  // will be chosen automatically.
+%>
+<% if (isAdmin) { %>
+  <%- include('admin-header') %>
+<% } else { %>
+  <header>
+    <nav>
+      <div class="logo">
+        <img src="/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" />
+      </div>
 
-    <button id="menu-toggle" class="menu-toggle" aria-label="فتح/إغلاق القائمة">
-      <span></span><span></span><span></span>
-    </button>
+      <button id="menu-toggle" class="menu-toggle" aria-label="فتح/إغلاق القائمة">
+        <span></span><span></span><span></span>
+      </button>
 
-    <div class="nav-links" id="nav-links">
-      <a href="/" class="nav-link">الرئيسية</a>
-      <a href="/#products" class="nav-link">المتجر</a>
-      <a href="/cart" class="nav-link cart-link">
-        <i class="fas fa-shopping-cart"></i>
-        السلة 
-        <span class="cart-badge" id="cart-count">0</span>
-      </a>
-      <a href="/contact" class="nav-link">اتصل بنا</a>
-      <% if (user) { %>
-        <a href="/users/profile" class="nav-link">
-          <i class="fas fa-user"></i> حسابي
+      <div class="nav-links" id="nav-links">
+        <a href="/" class="nav-link">الرئيسية</a>
+        <a href="/#products" class="nav-link">المتجر</a>
+        <a href="/cart" class="nav-link cart-link">
+          <i class="fas fa-shopping-cart"></i>
+          السلة 
+          <span class="cart-badge" id="cart-count">0</span>
         </a>
-        <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
-      <% } else { %>
-        <a href="/auth/login" class="nav-link">تسجيل الدخول</a>
-        <a href="/auth/signup" class="nav-link">إنشاء حساب</a>
-      <% } %>
-    </div>
-  </nav>
-</header>
-
-<!-- Mobile menu and cart updates handled in /public/js/main.js (keeps templates clean) -->
+        <a href="/contact" class="nav-link">اتصل بنا</a>
+        <% if (user) { %>
+          <a href="/users/profile" class="nav-link">
+            <i class="fas fa-user"></i> حسابي
+          </a>
+          <a href="/auth/logout" class="nav-link">تسجيل الخروج</a>
+        <% } else { %>
+          <a href="/auth/login" class="nav-link">تسجيل الدخول</a>
+          <a href="/auth/signup" class="nav-link">إنشاء حساب</a>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+  <!-- Mobile menu and cart updates handled in /public/js/main.js (keeps templates clean) -->
+<% } %>

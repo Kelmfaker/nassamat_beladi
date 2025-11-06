@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include("../partials/admin-header") %>
+  <%- include("../partials/header") %>
 
   <main class="content admin-dashboard" style="padding:2rem;">
     <div class="admin-container">
@@ -47,7 +47,12 @@
                   <td><%= category.name %></td>
                   <td><%= category.description || '-' %></td>
                   <td class="actions">
-                    <button onclick='editCategory(<%- JSON.stringify(String(category._id)) %>, <%- JSON.stringify(category.name || '') %>, <%- JSON.stringify(category.description || '') %>)' class="btn btn-edit">تعديل</button>
+                    <button class="btn btn-edit edit-btn" 
+                      data-id="<%= category._id %>" 
+                      data-name="<%= (category.name || '') %>" 
+                      data-desc="<%= (category.description || '') %>">
+                      تعديل
+                    </button>
                     <form action="/admin/categories/<%= category._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
                       <button type="submit" class="btn btn-delete">حذف</button>
                     </form>
@@ -100,6 +105,18 @@
       const modal = document.getElementById('editModal');
       if (event.target === modal) closeModal();
     }
+
+    // Attach click handlers for edit buttons (delegated for safety)
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const id = btn.dataset.id;
+          const name = btn.dataset.name || '';
+          const desc = btn.dataset.desc || '';
+          editCategory(id, name, desc);
+        });
+      });
+    });
   </script>
 </body>
 </html>

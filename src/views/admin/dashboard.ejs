@@ -57,7 +57,7 @@
               <div class="stat-icon">💰</div>
               <div class="stat-body">
                 <div class="stat-title">الإيرادات (مدفوعة)</div>
-                <div class="stat-value"><%= totalRevenue.toFixed(2) %> دج</div>
+                <div class="stat-value"><%= totalRevenue.toFixed(2) %> <%= currencySymbol %></div>
               </div>
             </div>
           </a>
@@ -97,7 +97,7 @@
                   <tr>
                     <td><%= o.orderNumber %></td>
                     <td><%= o.user ? o.user.name : 'ضيف' %></td>
-                    <td><%= o.totalAmount.toFixed(2) %> دج</td>
+                    <td><%= o.totalAmount.toFixed(2) %> <%= currencySymbol %></td>
                     <td><%= o.status %></td>
                     <td><%= new Date(o.createdAt).toLocaleString('ar-EG-u-nu-latn') %></td>
                   </tr>
@@ -113,7 +113,7 @@
     </div>
   </main>
 
-  <%- include('../partials/footer') %>
+  <%- include('../partials/footer.ejs') %>
   <!-- Chart data (injected) -->
   <script>
     // Minimal injection for external admin-dashboard.js to consume
