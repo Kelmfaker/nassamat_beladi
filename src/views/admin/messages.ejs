@@ -39,6 +39,15 @@
                     <td style="padding:12px 8px"><%= m.name || '-' %></td>
                     <td style="padding:12px 8px"><%= m.email || '-' %></td>
                     <td style="padding:12px 8px;max-width:480px;white-space:pre-wrap;text-align:justify"><%= m.message %></td>
+                    <td style="padding:12px 8px;white-space:nowrap">
+                      <form method="post" action="/admin/messages/delete" onsubmit="return confirm('هل أنت متأكد من حذف هذه الرسالة؟');" style="display:inline">
+                        <% if (m.id) { %>
+                          <input type="hidden" name="id" value="<%= m.id %>">
+                        <% } %>
+                        <input type="hidden" name="createdAt" value="<%= m.createdAt %>">
+                        <button type="submit" class="btn btn-delete" title="حذف">حذف</button>
+                      </form>
+                    </td>
                   </tr>
                 <% }) %>
               <% } %>
