@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/users");
+const Message = require("../models/message");
 
 async function attachUser(req, res, next) {
   res.locals.user = null; // ensure always defined
@@ -16,6 +17,29 @@ async function attachUser(req, res, next) {
   } catch (_) { /* ignore */ }
   // expose admin boolean for templates
   try { res.locals.isAdmin = !!(req.user && req.user.role === 'admin'); } catch (e) { res.locals.isAdmin = false; }
+  // expose number of unread/total messages for admin header (fast best-effort)
+  try {
+    res.locals.adminMessagesCount = 0;
+    if (res.locals.isAdmin) {
+      try {
+        // try DB count first
+        const cnt = await Message.countDocuments();
+        res.locals.adminMessagesCount = Number(cnt) || 0;
+      } catch (dbErr) {
+        // fallback to file-based count
+        try {
+          const fs = require('fs');
+          const p = require('path').join(__dirname, '../../uploads/messages.jsonl');
+          if (fs.existsSync(p)) {
+            const lines = fs.readFileSync(p, 'utf8').trim();
+            res.locals.adminMessagesCount = lines ? lines.split('\n').length : 0;
+          }
+        } catch (fileErr) {
+          res.locals.adminMessagesCount = 0;
+        }
+      }
+    }
+  } catch (e) { res.locals.adminMessagesCount = 0; }
   next();
 }
 

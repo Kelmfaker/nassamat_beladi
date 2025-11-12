@@ -8,10 +8,24 @@
 
 /* Configurable product thumbnail variables */
 :root {
-  --product-thumb-size: 100px;            /* fixed square thumbnail for all products */
+  /* Fixed square thumbnail for product galleries (compact preset) */
+  --product-thumb-size: 80px;             /* gallery/thumb size on desktop */
   --product-thumb-size-mobile: 80px;      /* thumbnail on smaller screens */
   --product-grid-thumb-max-height: var(--product-thumb-size); /* grid thumbnails use same fixed size */
-  --product-card-thumb-size: 200px;       /* legacy product card thumb fallback */
+
+  /* Featured / product-card thumbnail size (compact preset)
+     Default: 240px, responsive: 240px on small screens, 320px on very large screens */
+  --product-card-thumb-size: 240px;
+  --image-detail: 800px;
+
+}
+
+/* Responsive adjustments for product-card thumbnail size */
+@media (max-width: 768px) {
+  :root { --product-card-thumb-size: 240px; }
+}
+@media (min-width: 1400px) {
+  :root { --product-card-thumb-size: 320px; }
 }
 
 * {
@@ -152,6 +166,19 @@ nav {
   padding: 0.2rem 0.5rem;
   border-radius: 10px;
   font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* small badge for nav items (admin messages) */
+.nav-badge {
+  display: inline-block;
+  background: #0D8442;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  margin-inline-start: 6px;
   min-width: 20px;
   text-align: center;
 }
@@ -376,12 +403,13 @@ nav {
 ------------------------------------------------------------------- */
 .product-detail-page {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 120px;
   margin: 0 auto;
 }
 .product-detail-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 360px;
+  /* Equal-width columns (50% / 50%) so the image/gallery and the form share space evenly */
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: start;
 }
@@ -398,18 +426,40 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 520px;
+  /* Default: large, responsive image area */
+  height: clamp(340px, 50vh, 640px);
 }
 .product-main-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-.product-gallery { display: flex; flex-direction: column; gap: .5rem; }
-.product-thumb { width: 100%; height: 160px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px solid #eee; }
-.product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+/* Smaller main image variant for compact layouts */
+.product-main-image.small {
+  /* Use the design system card thumb size so images are consistent across the site */
+  max-width: var(--image-detail);
+  height: var(--image-detail);
+  margin: 0 auto; /* center */
+}
+.product-main-image.small img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.product-gallery { display: none !important; }
+.product-thumb { display: none !important; }
+
+/* New wrapper to make the main image full-width above the grid */
+.product-main-wrap { grid-column: 1 / -1; margin-bottom: 1rem; }
 
 .product-side { background: #fff; border-radius: 8px; padding: 1rem; border: 1px solid #eee; display: flex; flex-direction: column; gap: 12px; }
 .product-side h1 { margin: 0; font-size: 1.6rem; }
 .product-side .category { color: #777; font-size: .95rem; }
 .product-side .price { color: var(--price-color,#0D8442); font-weight: 900; font-size: 1.4rem; }
+
+/* Constrain admin-style cards (used for product details/right column) on very large screens
+   so the form/card doesn't become excessively wide. Keep full width under the max. */
+.admin-card {
+  max-width: 420px;
+  width: 100%;
+  margin-inline-start: auto; /* push to the right in RTL layout */
+  /* Add a small left gap when the card is constrained so it doesn't sit flush against the image column */
+  margin-inline-end: 24px; /* in RTL this becomes a left margin */
+}
 
 .product-side-actions { display: flex; flex-direction: column; gap: .75rem; align-items: stretch; }
 .product-side-actions .btn { display:flex; align-items:center; justify-content:center; gap:.5rem; }
@@ -421,6 +471,26 @@ nav {
 .side-image-box { margin-top: auto; display: block; }
 .side-image-box img { width: 100%; border-radius: 8px; object-fit: cover; }
 
+}
+
+/* Plain text field used on product detail page to match input visuals */
+.text-field {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: .5rem .65rem;
+  border-radius: 6px;
+  min-height: 42px;
+  display: block;
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.text-field.description {
+  min-height: auto;
+  max-height: 12rem;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 
 .prd-description {
@@ -2462,6 +2532,52 @@ tbody td button {
   display: block !important;
   opacity: 1; /* visible by default; .loaded can still control transitions */
 }
+
+/* ========================================================================
+   USER REQUEST: Force all invisible buttons to be visible and update color
+   This rule intentionally targets button-like elements only. It does NOT
+   change modal or layout visibility (e.g. .modal remains display:none).
+   If you want to target fewer selectors, tell me and I'll narrow it.
+   ======================================================================== */
+
+:root {
+  --btn-updated-bg: linear-gradient(135deg, #0D8442 0%, #0a6b35 100%); /* primary green */
+  --btn-updated-color: #ffffff;
+}
+
+/* Make buttons visible if they were hidden and ensure they're clickable
+   EXCLUDE the mobile menu toggle (#menu-toggle / .menu-toggle) so its
+   original styling and behavior are preserved. */
+button:not(.menu-toggle):not(#menu-toggle), .btn:not(.menu-toggle):not(#menu-toggle), input[type="button"]:not(.menu-toggle):not(#menu-toggle), input[type="submit"]:not(.menu-toggle):not(#menu-toggle), .actions .btn-sm {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Update primary/standard button appearance to the requested color */
+.btn:not(.menu-toggle):not(#menu-toggle), .btn-primary:not(.menu-toggle):not(#menu-toggle), .btn-add:not(.menu-toggle):not(#menu-toggle), button[type="submit"]:not(.menu-toggle):not(#menu-toggle) {
+  background: var(--btn-updated-bg) !important;
+  color: var(--btn-updated-color) !important;
+  border: none !important;
+  box-shadow: 0 8px 22px rgba(13,132,66,.22) !important;
+}
+
+/* Keep secondary / light buttons readable (invert on hover) */
+.btn-secondary, .btn-light {
+  background: #fff !important;
+  color: #0D8442 !important;
+  border: 2px solid #0D8442 !important;
+}
+
+/* Ensure small action buttons conform visually */
+.actions .btn-sm {
+  background: var(--btn-updated-bg) !important;
+  color: var(--btn-updated-color) !important;
+}
+
 
 /* Mobile fallback sizes */
 @media (max-width: 768px) {

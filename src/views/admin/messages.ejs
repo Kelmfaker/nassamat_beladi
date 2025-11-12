@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>رسائل الاتصال - الإدارة</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="content admin-dashboard" style="padding:2rem">
+    <div class="admin-container">
+      <section style="width:100%">
+        <h2>رسائل اتصل بنا</h2>
+        <form method="get" action="/admin/messages" style="display:flex;gap:.5rem;align-items:center;margin:1rem 0">
+          <input type="text" name="q" placeholder="بحث بالاسم أو البريد أو الرسالة" value="<%= q %>" style="padding:.5rem;border:1px solid #eee;border-radius:6px;min-width:320px">
+          <button class="btn btn-primary" type="submit">بحث</button>
+          <a class="btn btn-secondary" href="/admin/messages?download=csv<%= q?('&q='+encodeURIComponent(q)):'' %>">تحميل CSV</a>
+        </form>
+
+        <div style="overflow:auto;background:#fff;border-radius:8px;padding:0.5rem;border:1px solid #eee">
+          <table class="admin-table" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th>تاريخ</th>
+                <th>الاسم</th>
+                <th>البريد</th>
+                <th>الرسالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!messages || messages.length===0) { %>
+                <tr><td colspan="4" style="padding:1rem;text-align:center">لا توجد رسائل</td></tr>
+              <% } else { %>
+                <% messages.forEach(m => { %>
+                  <tr>
+                    <td style="padding:12px 8px;white-space:nowrap"><%= m.createdAt %></td>
+                    <td style="padding:12px 8px"><%= m.name || '-' %></td>
+                    <td style="padding:12px 8px"><%= m.email || '-' %></td>
+                    <td style="padding:12px 8px;max-width:480px;white-space:pre-wrap;text-align:justify"><%= m.message %></td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center">
+          <div>إجمالي النتائج: <strong><%= total %></strong></div>
+          <div>
+            <% if (page>1) { %>
+              <a class="btn btn-light" href="/admin/messages?page=<%= page-1 %>&perPage=<%= perPage %><%= q?('&q='+encodeURIComponent(q)) : '' %>">السابق</a>
+            <% } %>
+            <% if (page<pages) { %>
+              <a class="btn btn-light" href="/admin/messages?page=<%= page+1 %>&perPage=<%= perPage %><%= q?('&q='+encodeURIComponent(q)) : '' %>">التالي</a>
+            <% } %>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

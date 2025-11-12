@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>اتصل بنا - نسمات بلادي</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="content" style="padding:2rem;">
+    <div class="products-container">
+      <section style="max-width:760px;margin:0 auto;background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.04)">
+        <h2>اتصل بنا</h2>
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger" style="margin-bottom:1rem;color:#842029;background:#fdecea;padding:.75rem;border-radius:6px;border:1px solid #f5c2c7"><%= error %></div>
+        <% } %>
+
+        <% if (success) { %>
+          <div class="alert alert-success" style="margin-bottom:1rem;color:#0f5132;background:#d1e7dd;padding:.75rem;border-radius:6px;border:1px solid #badbcc">
+            شكراً لرسالتك، سنعاود التواصل معك قريباً.
+          </div>
+        <% } %>
+
+        <form method="post" action="/contact" style="display:flex;flex-direction:column;gap:0.75rem">
+          <label>الاسم (اختياري)
+            <input type="text" name="name" placeholder="اسمك" style="padding:.6rem;border-radius:6px;border:1px solid #eee;width:100%">
+          </label>
+
+          <label>البريد الإلكتروني (اختياري)
+            <input type="email" name="email" placeholder="example@domain.com" style="padding:.6rem;border-radius:6px;border:1px solid #eee;width:100%">
+          </label>
+
+          <label>الرسالة *
+            <textarea name="message" rows="6" required placeholder="نص الرسالة" style="padding:.6rem;border-radius:6px;border:1px solid #eee;width:100%"></textarea>
+          </label>
+
+          <div style="display:flex;gap:.5rem;justify-content:flex-end">
+            <button type="submit" class="btn btn-primary">إرسال</button>
+            <a href="/" class="btn btn-secondary" style="text-decoration:none;padding:.6rem 1rem;border-radius:6px;display:inline-flex;align-items:center;">العودة</a>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

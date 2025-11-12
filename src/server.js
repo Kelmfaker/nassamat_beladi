@@ -28,11 +28,13 @@ const orderRoutes = require("./routes/order.routes");
 const reviewRoutes = require("./routes/review.routes");
 const authRoutes = require("./routes/auth.routes");
 const cartRoutes = require("./routes/cart.routes");
+const contactRoutes = require("./routes/contact.routes");
 const adminDashboardRoutes = require("./routes/admin.dashboard.routes");
 const adminUsersRoutes = require("./routes/admin.users.routes");
 const adminProductsRoutes = require("./routes/admin.products.routes");
 const adminCategoriesRoutes = require("./routes/admin.categories.routes");
 const adminOrdersRoutes = require("./routes/admin.orders.routes");
+const adminMessagesRoutes = require("./routes/admin.messages.routes");
 
 
 const app = express();
@@ -59,6 +61,7 @@ app.use('/products', publicProductRoutes);
 app.use('/categories', publicCategoryRoutes);
 app.use('/orders', orderRoutes);
 app.use('/cart', cartRoutes);
+app.use('/contact', contactRoutes);
 
 // Admin routes
 app.use('/admin', adminDashboardRoutes);
@@ -66,6 +69,7 @@ app.use('/admin/users', adminUsersRoutes);
 app.use('/admin/products', adminProductsRoutes);
 app.use('/admin/categories', adminCategoriesRoutes);
 app.use('/admin/orders', adminOrdersRoutes);
+app.use('/admin/messages', adminMessagesRoutes);
 
 app.use('/auth', authRoutes);
 
