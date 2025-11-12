@@ -74,13 +74,16 @@ router.get('/:id', async (req, res, next) => {
       });
     }
 
-    // Get related products from same category
-    const relatedProducts = await Product.find({
-      category: product.category._id,
-      _id: { $ne: product._id }
-    })
-    .limit(4)
-    .lean();
+    // Get related products from same category (guard if product has no category)
+    let relatedProducts = [];
+    if (product.category && product.category._id) {
+      relatedProducts = await Product.find({
+        category: product.category._id,
+        _id: { $ne: product._id }
+      })
+      .limit(4)
+      .lean();
+    }
 
     res.render('product-detail', {
       product,

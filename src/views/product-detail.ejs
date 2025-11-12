@@ -10,8 +10,14 @@
 <body>
   <%- include("partials/header") %>
 
-  <main class="product-detail-page">
-    <div class="product-detail-grid">
+  <section class="products-content">
+    <div class="products-container">
+      <div class="products-header">
+        <h1><i class="fas fa-seedling"></i> <%= product.name %></h1>
+        <p><%= product.category?.name || '' %></p>
+      </div>
+
+      <div class="product-detail-grid">
       <!-- Left: large main image -->
       <div>
         <div class="product-main-image">
@@ -37,14 +43,22 @@
 
       <!-- Right: actions, title, description -->
       <aside>
-        <div class="product-side-actions product-side">
+        <!-- Product detail as a form: quantity + add to cart (handled by existing localStorage addToCart) -->
+        <form id="productForm" class="product-side-actions product-side" onsubmit="handleProductFormSubmit(event)">
+          <input type="hidden" name="productId" value="<%= product._id %>">
+
           <div style="display:flex;flex-direction:column;gap:.5rem">
-            <button class="btn btn-primary" onclick="addToCart('<%= product._id %>',1)"><i class="fas fa-cart-plus icon" aria-hidden="true"></i>أضف للسلة</button>
-            <a href="#reviews" class="btn btn-secondary"><i class="fas fa-star icon" aria-hidden="true"></i>مراجعات</a>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <label for="productQty" style="font-weight:700;margin-right:.5rem">الكمية</label>
+              <input id="productQty" name="quantity" type="number" min="1" value="1" style="width:80px;padding:.5rem;border-radius:6px;border:1px solid #e0e0e0;text-align:center;">
+            </div>
+
+            <button type="submit" class="btn btn-primary"><i class="fas fa-cart-plus icon" aria-hidden="true"></i> أضف للسلة</button>
+            <a href="#reviews" class="btn btn-secondary"><i class="fas fa-star icon" aria-hidden="true"></i> مراجعات</a>
           </div>
 
           <div>
-            <h1><%= product.name %></h1>
+            <h1 class="product-title"><%= product.name %></h1>
             <div class="category"><%= product.category?.name || 'بدون قسم' %></div>
             <div class="price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></div>
           </div>
@@ -59,7 +73,7 @@
               <img src="<%= imgSrc2 %>" alt="<%= product.name %>">
             <% } %>
           </div>
-        </div>
+        </form>
       </aside>
     </div>
 
@@ -82,11 +96,25 @@
       </section>
     <% } %>
 
-  </main>
+    </div>
+  </section>
 
   <%- include("partials/footer") %>
 
   <script>
+    // Form submit handler for product detail form
+    function handleProductFormSubmit(e) {
+      e.preventDefault();
+      try {
+        const qtyEl = document.getElementById('productQty');
+        const qty = qtyEl ? parseInt(qtyEl.value, 10) || 1 : 1;
+        const pid = '<%= product._id %>';
+        addToCart(pid, qty);
+      } catch (err) {
+        console.error('Failed to add product from form', err);
+      }
+    }
+
     // Add to cart (local storage) - same behaviour used elsewhere
     function addToCart(productId, quantity) {
       let cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -94,13 +122,11 @@
       if (existing) {
         existing.quantity += quantity;
       } else {
-        cart.push({
-          productId,
-          name: <%= JSON.stringify(product.name || '') %>,
-          price: <%= Number(product.price || 0) %>,
-          image: <%= JSON.stringify(product.image || '/images/default-product.svg') %>,
-          quantity
-        });
+        // build values safely as JS strings/numbers
+        const _name = "<%= (product.name || '').replace(/\"/g, '\\\"') %>";
+  const _price = "<%= Number(product.price || 0) %>";
+        const _image = "<%= (product.image || '/images/default-product.svg').replace(/\"/g, '\\\"') %>";
+        cart.push({ productId, name: _name, price: _price, image: _image, quantity });
       }
       localStorage.setItem('cart', JSON.stringify(cart));
       alert('تمت إضافة المنتج إلى السلة');
