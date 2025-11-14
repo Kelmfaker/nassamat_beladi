@@ -122,6 +122,7 @@ router.get("/:id/edit", isAdmin, async (req, res) => {
 router.post("/:id", isAdmin, upload.single("image"), async (req, res) => {
   try {
     const { name, description, price, category, inStock } = req.body;
+    // allow updating stock via this endpoint when provided
     const updateData = {
       name,
       description,
@@ -129,6 +130,12 @@ router.post("/:id", isAdmin, upload.single("image"), async (req, res) => {
       category,
       inStock: inStock === "on",
     };
+
+    if (typeof req.body.stock !== 'undefined') {
+      // ensure an integer stock value (truncate toward zero)
+      const parsedStock = Math.trunc(Number(req.body.stock || 0));
+      updateData.stock = isNaN(parsedStock) ? 0 : parsedStock;
+    }
 
     if (req.file) {
       updateData.image = `/images/products/${req.file.filename}`;

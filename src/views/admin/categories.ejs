@@ -47,8 +47,9 @@
                   <td><%= category.name %></td>
                   <td><%= category.description || '-' %></td>
                   <td class="actions">
-                    <button class="btn btn-edit edit-btn" 
+                    <button type="button" class="btn btn-edit edit-btn"
                       data-id="<%= category._id %>" 
+                      data-action="/admin/categories/<%= category._id %>"
                       data-name="<%= (category.name || '') %>" 
                       data-desc="<%= (category.description || '') %>">
                       تعديل
@@ -74,6 +75,7 @@
       <span class="close" onclick="closeModal()">&times;</span>
       <h2>تعديل القسم</h2>
       <form id="editForm" method="POST">
+        <input type="hidden" id="edit-id" name="id" value="">
         <div class="form-group">
           <label for="edit-name">اسم القسم</label>
           <input type="text" id="edit-name" name="name" required>
@@ -110,11 +112,29 @@
     document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-          const id = btn.dataset.id;
-          const name = btn.dataset.name || '';
-          const desc = btn.dataset.desc || '';
-          editCategory(id, name, desc);
-        });
+                const id = btn.dataset.id;
+                const action = btn.dataset.action || ('/admin/categories/' + id);
+                // Prefer dataset values, but fall back to reading the table cells (safer when description contains quotes)
+                let name = btn.dataset.name;
+                let desc = btn.dataset.desc;
+                if (!name || !desc) {
+                  const row = btn.closest('tr');
+                  if (row) {
+                    try {
+                      const nameCell = row.querySelector('td:nth-child(1)');
+                      const descCell = row.querySelector('td:nth-child(2)');
+                      if (!name) name = nameCell ? nameCell.textContent.trim() : '';
+                      if (!desc) desc = descCell ? descCell.textContent.trim() : '';
+                    } catch (e) { /* ignore and keep dataset values */ }
+                  }
+                }
+                name = name || '';
+                desc = desc || '';
+                // set action explicitly and also set hidden id as a fallback
+                document.getElementById('editForm').action = action;
+                document.getElementById('edit-id').value = id;
+                editCategory(id, name, desc);
+              });
       });
     });
   </script>

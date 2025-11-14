@@ -15,6 +15,10 @@
       <div class="products-header">
         <h1><i class="fas fa-seedling"></i> المنتجات</h1>
         <p>أفضل المنتجات الطبيعية من نسمات بلادي</p>
+        <div class="category-meta" style="margin-top:.25rem; display:flex; gap:.5rem; align-items:center;">
+          <p class="category-description" style="margin:0;color:#666;font-size:.95rem;"></p>
+          <button id="clearFilterBtn" type="button" class="btn clear-filter" style="display:none;">مسح الفلتر</button>
+        </div>
       </div>
 
       <div class="products-toolbar">
@@ -24,10 +28,11 @@
         </div>
         <div class="toolbar-actions">
           <select class="sort-select" name="sort" id="sortSelect">
-            <option value="new">الأحدث</option>
-            <option value="price_asc">السعر: من الأرخص</option>
-            <option value="price_desc">السعر: من الأعلى</option>
-            <option value="name">الاسم: أ-ي</option>
+            <option value="new" <%= typeof selectedSort !== 'undefined' && selectedSort === 'new' ? 'selected' : '' %>>الأحدث</option>
+            <option value="price_asc" <%= typeof selectedSort !== 'undefined' && selectedSort === 'price_asc' ? 'selected' : '' %>>السعر: من الأرخص</option>
+            <option value="price_desc" <%= typeof selectedSort !== 'undefined' && selectedSort === 'price_desc' ? 'selected' : '' %>>السعر: من الأعلى</option>
+            <option value="name" <%= typeof selectedSort !== 'undefined' && selectedSort === 'name' ? 'selected' : '' %>>الاسم: أ-ي</option>
+            <option value="reviews" <%= typeof selectedSort !== 'undefined' && selectedSort === 'reviews' ? 'selected' : '' %>>الأعلى تقييماً</option>
           </select>
           <div class="view-toggle">
             <button type="button" class="active" data-view="grid"><i class="fas fa-border-all"></i></button>
@@ -37,16 +42,17 @@
       </div>
 
       <div class="filter-chips">
-        <button class="chip active" data-category="all">الكل</button>
-        <% if (categories && categories.length > 0) { %>
-          <% categories.forEach(cat => { %>
-            <button class="chip" data-category="<%= cat._id %>"><%= cat.name %></button>
-          <% }) %>
-        <% } else { %>
-          <button class="chip" data-category="honey">عسل</button>
-          <button class="chip" data-category="herbs">أعشاب</button>
-          <button class="chip" data-category="oils">زيوت</button>
-        <% } %>
+        <!-- Category select dropdown (single-select). Replaces chips/list UI. -->
+        <label for="categorySelect" style="display:flex;gap:.5rem;align-items:center;">
+          <select id="categorySelect" name="category" style="padding:.35rem .6rem;border-radius:6px;border:1px solid #ddd;background:#fff;">
+            <option value="all">الكل</option>
+            <% if (categories && categories.length > 0) { %>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat._id %>" data-desc="<%= (cat.description || '') %>"><%= cat.name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </label>
       </div>
 
   <div class="store">
@@ -65,7 +71,7 @@
           </thead>
           <tbody>
             <% products.forEach(product => { %>
-              <tr data-product-id="<%= product._id %>">
+              <tr data-product-id="<%= product._id %>" data-category-id="<%= product.category?._id || '' %>">
                 <td class="td-img">
                   <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/' + product.image); %>
                     <img src="<%= imgSrc %>" alt="<%= product.name %>" width="72" height="72" style="object-fit:cover;border-radius:6px;" />
@@ -73,18 +79,28 @@
                     <img src="/images/default-product.svg" alt="<%= product.name %>" width="72" height="72" style="object-fit:contain;border-radius:6px;background:#fff;padding:6px;" />
                   <% } %>
                 </td>
-                <td class="td-name"><%= product.name %></td>
+                <td class="td-name">
+                  <div style="display:flex;flex-direction:column;gap:.25rem;">
+                    <span><%= product.name %></span>
+                    <% if (typeof product.avgRating !== 'undefined') { %>
+                      <small class="prod-rating" style="color:#f39c12;font-weight:600;"> <%= (product.avgRating ? product.avgRating.toFixed(1) : '0.0') %> ★</small>
+                    <% } %>
+                  </div>
+                </td>
                 <td class="td-cat"><%= product.category?.name || 'بدون قسم' %></td>
                 <td class="td-desc">
                   <p class="description prd-desc"><%= product.description || '' %></p>
                   <button type="button" class="read-more" aria-expanded="false">اقرأ المزيد</button>
                 </td>
                 <td class="td-price">
-                  <% if (product.discount && product.discount > 0) { %>
-                    <div class="old-price"><%= product.price.toFixed(2) %> <%= currencySymbol %></div>
-                    <div class="new-price"><%= (product.price * (1 - product.discount / 100)).toFixed(2) %> <%= currencySymbol %></div>
+                  <% const displayPrice = Math.round(Number(product.price));
+                     const discount = Number(product.discount || 0);
+                  %>
+                  <% if (discount > 0) { %>
+                    <div class="old-price"><%= displayPrice %> <%= currencySymbol %></div>
+                    <div class="new-price"><%= Math.round(displayPrice * (1 - discount / 100)) %> <%= currencySymbol %></div>
                   <% } else { %>
-                    <div class="new-price"><%= product.price.toFixed(2) %> <%= currencySymbol %></div>
+                    <div class="new-price"><%= displayPrice %> <%= currencySymbol %></div>
                   <% } %>
                 </td>
                 <td class="td-actions">
@@ -110,15 +126,15 @@
       <% if (totalPages && totalPages > 1) { %>
         <nav class="pagination">
           <% if (currentPage > 1) { %>
-            <a class="page-link" href="?page=<%= currentPage - 1 %>"><i class="fas fa-angle-right"></i></a>
+            <a class="page-link" href="?page=<%= currentPage - 1 %><%= baseQueryString %>"><i class="fas fa-angle-right"></i></a>
           <% } %>
           
           <% for(let i = 1; i <= totalPages; i++) { %>
-            <a class="page-link <%= i === currentPage ? 'active' : '' %>" href="?page=<%= i %>"><%= i %></a>
+            <a class="page-link <%= i === currentPage ? 'active' : '' %>" href="?page=<%= i %><%= baseQueryString %>"><%= i %></a>
           <% } %>
           
           <% if (currentPage < totalPages) { %>
-            <a class="page-link" href="?page=<%= currentPage + 1 %>"><i class="fas fa-angle-left"></i></a>
+            <a class="page-link" href="?page=<%= currentPage + 1 %><%= baseQueryString %>"><i class="fas fa-angle-left"></i></a>
           <% } %>
         </nav>
       <% } %>
@@ -126,6 +142,7 @@
   </section>
 
   <%- include("partials/footer") %>
+  <div id="initial-data" style="display:none;" data-selected-id="<%= typeof selectedCategoryId !== 'undefined' ? selectedCategoryId : 'all' %>" data-selected-desc="<%= typeof selectedCategoryDesc !== 'undefined' ? selectedCategoryDesc : '' %>"></div>
 
   <script>
     // Lightweight image loaded handler: adds .loaded class to product images so CSS fades them in
@@ -152,15 +169,73 @@
     });
 
     // Category filter
-    document.querySelectorAll('.chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        const category = chip.dataset.category;
-        // TODO: Filter products by category via AJAX or page reload
-        console.log('Filter by:', category);
+    // Animated show/hide helpers for table rows
+    function hideRow(row) {
+      if (!row) return;
+      if (row.style.display === 'none') return;
+      row.classList.add('filter-hidden');
+      const onEnd = (e) => {
+        if (e.target !== row) return;
+        row.style.display = 'none';
+        row.removeEventListener('transitionend', onEnd);
+      };
+      row.addEventListener('transitionend', onEnd);
+    }
+
+    function showRow(row) {
+      if (!row) return;
+      row.style.display = '';
+      requestAnimationFrame(() => row.classList.remove('filter-hidden'));
+    }
+
+    // Category select handler (single-select dropdown)
+    const categorySelect = document.getElementById('categorySelect');
+    if (categorySelect) {
+      categorySelect.addEventListener('change', () => {
+        const category = categorySelect.value;
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        const desc = selectedOption ? (selectedOption.dataset.desc || '') : '';
+        const catDescEl = document.querySelector('.category-description');
+        if (catDescEl) catDescEl.textContent = desc;
+        const clearBtn = document.getElementById('clearFilterBtn');
+        if (clearBtn) clearBtn.style.display = (category && category !== 'all') ? 'inline-block' : 'none';
+
+        document.querySelectorAll('.public-products-table tbody tr, .admin-products-table tbody tr, .product').forEach(row => {
+          const rowCat = row.dataset.categoryId || '';
+          if (!category || category === 'all') {
+            showRow(row);
+          } else {
+            if (rowCat) {
+              if (rowCat === category) showRow(row); else hideRow(row);
+            } else {
+              const catCell = row.querySelector('.td-cat');
+              const txt = catCell ? (catCell.textContent || '').trim().toLowerCase() : '';
+              if (txt === category.toString().toLowerCase()) showRow(row); else hideRow(row);
+            }
+          }
+        });
       });
-    });
+    }
+
+    // (Removed legacy category list/checklist handlers.)
+
+    // Clear filter button
+    const clearBtn = document.getElementById('clearFilterBtn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        // reset select to 'all' and trigger change
+        const sel = document.getElementById('categorySelect');
+        if (sel) {
+          sel.value = 'all';
+          sel.dispatchEvent(new Event('change'));
+        } else {
+          const catDescEl = document.querySelector('.category-description');
+          if (catDescEl) catDescEl.textContent = '';
+          clearBtn.style.display = 'none';
+          document.querySelectorAll('.public-products-table tbody tr, .admin-products-table tbody tr, .product').forEach(row => showRow(row));
+        }
+      });
+    }
 
     // Search (works for both card-list `.product` and table `.admin-products-table`)
     const searchInput = document.getElementById('searchInput');
@@ -168,28 +243,26 @@
       searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toLowerCase();
 
-        // Table rows (public-products-table / admin-products-table)
-        document.querySelectorAll('.public-products-table tbody tr, .admin-products-table tbody tr').forEach(row => {
-          const nameCell = row.querySelector('.td-name') || row.querySelector('td:nth-child(2)');
+        // Rows and cards
+        document.querySelectorAll('.public-products-table tbody tr, .admin-products-table tbody tr, .product').forEach(item => {
+          // for table rows, look for .td-name; for cards, look for .prd-title
+          const nameCell = item.querySelector('.td-name') || item.querySelector('.prd-title') || item.querySelector('td:nth-child(2)');
           const txt = nameCell ? (nameCell.textContent || '').toLowerCase() : '';
-          row.style.display = txt.includes(query) ? '' : 'none';
-        });
-
-        // Fallback for old card layout
-        document.querySelectorAll('.product').forEach(card => {
-          const titleEl = card.querySelector('.prd-title');
-          const title = titleEl ? titleEl.textContent.toLowerCase() : '';
-          card.style.display = title.includes(query) ? '' : 'none';
+          if (txt.includes(query)) showRow(item); else hideRow(item);
         });
       });
     }
 
-    // Sort
+    // Sort - update query params and reload while preserving filters/search
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
-        // TODO: Implement sorting logic
-        console.log('Sort by:', e.target.value);
+        const val = e.target.value;
+        const params = new URLSearchParams(window.location.search);
+        if (val && val !== 'new') params.set('sort', val); else params.delete('sort');
+        // when changing sort, reset to first page
+        params.set('page', '1');
+        window.location.search = params.toString();
       });
     }
 
@@ -243,6 +316,37 @@
           btn.textContent = expanded ? 'عرض أقل' : 'اقرأ المزيد';
         });
       });
+    });
+  </script>
+  <script>
+    // Initialize server-side selected category (if any)
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const initEl = document.getElementById('initial-data');
+        const selectedId = initEl ? (initEl.dataset.selectedId || 'all') : 'all';
+        const desc = initEl ? (initEl.dataset.selectedDesc || '') : '';
+        if (selectedId && selectedId !== 'all') {
+          const sel = document.getElementById('categorySelect');
+          if (sel) {
+            sel.value = selectedId;
+            sel.dispatchEvent(new Event('change'));
+          } else {
+            const catDescEl = document.querySelector('.category-description');
+            if (catDescEl) catDescEl.textContent = desc || '';
+            const clearBtn = document.getElementById('clearFilterBtn');
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+            document.querySelectorAll('.public-products-table tbody tr, .admin-products-table tbody tr, .product').forEach(row => {
+              const rowCat = row.dataset.categoryId || '';
+              if (rowCat) {
+                if (rowCat === selectedId) showRow(row); else hideRow(row);
+              }
+            });
+          }
+        } else {
+          const sel = document.getElementById('categorySelect');
+          if (sel) sel.value = 'all';
+        }
+      } catch (e) { console.error('Init category filter error', e); }
     });
   </script>
 </body>

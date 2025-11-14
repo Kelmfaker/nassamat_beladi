@@ -342,6 +342,68 @@ nav {
   font-size: clamp(1rem, 3vw, 1.2rem);
 }
 
+/* Category description and filter controls */
+.category-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.category-description {
+  color: #556b55;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+.clear-filter {
+  background: transparent;
+  border: 1px solid rgba(13,132,66,0.12);
+  color: #0D8442;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.clear-filter:hover {
+  background: #0D8442;
+  color: #fff;
+}
+
+/* Category list view */
+.category-list ul li button.cat-list-item {
+  color: #556b55;
+  font-size: 0.98rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-align: right;
+  width: 100%;
+}
+.category-list ul li button.cat-list-item:hover {
+  background: rgba(13,132,66,0.06);
+}
+
+/* Filter animation for product rows */
+.public-products-table tbody tr,
+.admin-products-table tbody tr {
+  transition: opacity 220ms ease, transform 220ms ease;
+  transform-origin: right center;
+}
+.public-products-table tbody tr.filter-hidden,
+.admin-products-table tbody tr.filter-hidden {
+  opacity: 0;
+  transform: translateX(12px) scale(.995);
+  pointer-events: none;
+}
+
+/* Product card animation (for card grid view) */
+.product {
+  transition: opacity 220ms ease, transform 220ms ease;
+  transform-origin: center top;
+}
+.product.filter-hidden {
+  opacity: 0;
+  transform: translateY(8px) scale(.995);
+  pointer-events: none;
+}
+
 /* Products area styled like the provided example (flex-wrap cards)
    - fixed image height (180px)
    - compact card width/height (15em) and truncation for descriptions
@@ -826,6 +888,17 @@ tbody td {
   text-align: center;
   border-bottom: 1px solid #eee;
   font-size: clamp(13px, 2vw, 15px);
+}
+
+/* Ensure numeric stock cells use a reliable Latin/monospace-friendly font
+   and render left-to-right so digits (e.g., "17") don't lose glyphs when
+   the primary Arabic display font lacks certain Western digit glyphs. */
+.td-stock,
+.stock {
+  font-family: Arial, "Helvetica Neue", Helvetica, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  direction: ltr;
 }
 
 tbody tr:nth-child(even) {

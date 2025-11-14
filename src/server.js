@@ -76,8 +76,27 @@ app.use('/auth', authRoutes);
 // Home route (single response)
 app.get("/", async (req, res, next) => {
   try {
-    const products = await Product.find().populate("category").lean();
-    return res.render("index", { products, user: req.user || null });
+    // Load categories for the index page so the category <select> can be populated
+    const categories = await Category.find().lean();
+    // If a category is provided via query string, use it to filter products and initialize the select
+    const selectedCategoryId = req.query.category || 'all';
+    let selectedCategoryDesc = '';
+    let products;
+
+    let foundCategory = null;
+    if (selectedCategoryId && selectedCategoryId !== 'all') {
+      foundCategory = categories.find(c => String(c._id) === String(selectedCategoryId));
+      if (foundCategory) selectedCategoryDesc = foundCategory.description || '';
+    }
+
+    if (foundCategory) {
+      // Server-side filter: only load products that belong to the selected category
+      products = await Product.find({ category: foundCategory._id }).populate('category').lean();
+    } else {
+      products = await Product.find().populate('category').lean();
+    }
+
+    return res.render("index", { products, categories, selectedCategoryId, selectedCategoryDesc, user: req.user || null });
   } catch (err) {
     return next(err);
   }

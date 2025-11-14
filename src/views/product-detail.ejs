@@ -52,10 +52,21 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group">
-                <label>السعر (لكل وحدة)</label>
-                <div class="text-field"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></div>
+            <div class="form-group">
+              <label>السعر (لكل وحدة)</label>
+              <div class="text-field">
+                <% const displayPrice = Math.round(Number(product.price));
+                   const discount = Number(product.discount || 0);
+                   const hasDiscount = discount > 0;
+                %>
+                <% if (hasDiscount) { %>
+                  <div class="old-price"><%= displayPrice %> <%= currencySymbol %></div>
+                  <div class="new-price"><%= Math.round(displayPrice * (1 - discount/100)) %> <%= currencySymbol %></div>
+                <% } else { %>
+                  <div class="new-price"><%= displayPrice %> <%= currencySymbol %></div>
+                <% } %>
               </div>
+            </div>
               <div class="form-group">
                 <label for="productQty">الكمية</label>
                 <input id="productQty" name="quantity" type="number" min="1" value="1">
@@ -88,7 +99,7 @@
               <div class="prd-img"><img src="<%= img %>" alt="<%= p.name %>"></div>
               <div class="prd-description">
                 <div class="prd-title"><%= p.name %></div>
-                <div class="prices"><div class="new-price"><%= Number(p.price).toFixed(2) %> <%= currencySymbol %></div></div>
+                <div class="prices"><div class="new-price"><%= Math.round(Number(p.price)) %> <%= currencySymbol %></div></div>
                 <a class="more" href="/products/<%= p._id %>">تفاصيل</a>
               </div>
             </div>
@@ -125,7 +136,7 @@
       } else {
         // build values safely as JS strings/numbers
         const _name = "<%= (product.name || '').replace(/\"/g, '\\\"') %>";
-  const _price = "<%= Number(product.price || 0) %>";
+  const _price = "<%= Math.round(Number(product.price || 0)) %>";
         const _image = "<%= (product.image || '/images/default-product.svg').replace(/\"/g, '\\\"') %>";
         cart.push({ productId, name: _name, price: _price, image: _image, quantity });
       }

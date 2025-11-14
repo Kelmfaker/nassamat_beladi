@@ -9,7 +9,6 @@
   <header>
     <nav>
       <div class="logo">
-        <img src="/images/logo nassamat bladi copie.png" alt="Nassamat Beladi" />
       </div>
 
       <button id="menu-toggle" class="menu-toggle" aria-label="فتح/إغلاق القائمة">
@@ -39,3 +38,86 @@
   </header>
   <!-- Mobile menu and cart updates handled in /public/js/main.js (keeps templates clean) -->
 <% } %>
+
+<script>
+  // Ensure page content is pushed below the sticky header to avoid overlap
+  (function(){
+    function adjustContent() {
+      try {
+        var hdr = document.querySelector('header');
+        var content = document.querySelector('.content') || document.getElementById('content') || document.querySelector('main');
+        if (!hdr || !content) return;
+        var h = hdr.offsetHeight || 0;
+        // basePadding should match .content's existing padding-top (30px)
+        var basePadding = 30;
+        // Only set if current computed paddingTop is less than header height + basePadding
+        var computed = window.getComputedStyle(content).paddingTop || '';
+        var current = parseInt(computed, 10) || 0;
+        var desired = h + basePadding;
+        if (current < desired) content.style.paddingTop = desired + 'px';
+      } catch (err) {
+        // silent
+      }
+    }
+    window.addEventListener('load', adjustContent);
+    window.addEventListener('resize', adjustContent);
+    document.addEventListener('DOMContentLoaded', adjustContent);
+  })();
+</script>
+
+  <script>
+    // Enhance stock inputs with quick increment/decrement buttons (±10, ±100)
+    (function(){
+      function makeButtons() {
+        try {
+          const inputs = document.querySelectorAll('input[type="number"][name="stock"]');
+          if (!inputs || inputs.length === 0) return;
+
+          inputs.forEach(inp => {
+            // avoid adding twice
+            if (inp.dataset.stockEnhanced) return;
+            inp.dataset.stockEnhanced = '1';
+
+            const wrap = document.createElement('div');
+            wrap.style.display = 'flex';
+            wrap.style.gap = '6px';
+            wrap.style.alignItems = 'center';
+            wrap.style.marginTop = '6px';
+
+            const steps = [ -100, -10, 10, 100 ];
+            steps.forEach(step => {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.textContent = (step>0?'+':'') + String(step);
+              btn.style.padding = '4px 6px';
+              btn.style.fontSize = '12px';
+              btn.style.borderRadius = '6px';
+              btn.style.border = '1px solid #ddd';
+              btn.style.background = '#fff';
+              btn.style.cursor = 'pointer';
+              btn.addEventListener('click', function(e){
+                e.preventDefault();
+                const cur = Number(inp.value) || 0;
+                const next = Math.max(0, cur + step);
+                inp.value = next;
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+              });
+              wrap.appendChild(btn);
+            });
+
+            // insert after the input
+            inp.parentNode.insertBefore(wrap, inp.nextSibling);
+          });
+        } catch (err) {
+          console.error('stock enhancer error', err);
+        }
+      }
+
+      // Run on DOM ready and also when new elements might be added
+      document.addEventListener('DOMContentLoaded', makeButtons);
+      window.addEventListener('load', makeButtons);
+      // Also observe DOM for dynamically added stock inputs (e.g., modals)
+      const obs = new MutationObserver((mutations) => { makeButtons(); });
+      obs.observe(document.body, { childList: true, subtree: true });
+    })();
+  </script>

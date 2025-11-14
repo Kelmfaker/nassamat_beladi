@@ -17,10 +17,30 @@
         <p>تصفح تشكيلتنا المميزة من المنتجات الطبيعية</p>
       </div>
 
+      <div class="products-toolbar" style="margin-top:.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <!-- Category select dropdown (single-select) -->
+          <label for="categorySelectIndex" style="display:flex;gap:.5rem;align-items:center;">
+            <select id="categorySelectIndex" name="category" style="padding:.35rem .6rem;border-radius:6px;border:1px solid #ddd;background:#fff;">
+              <option value="all">الكل</option>
+              <% if (typeof categories !== 'undefined' && categories && categories.length > 0) { %>
+                <% categories.forEach(cat => { %>
+                  <option value="<%= cat._id %>" data-desc="<%= (cat.description || '') %>"><%= cat.name %></option>
+                <% }) %>
+              <% } %>
+            </select>
+          </label>
+          <p class="category-description" style="margin:0;color:#666;font-size:.95rem;"></p>
+        </div>
+        <div>
+          <button id="clearFilterBtnIndex" type="button" class="btn clear-filter" style="display:none;">مسح الفلتر</button>
+        </div>
+      </div>
+
       <div class="products-grid">
         <% if (products && products.length > 0) { %>
           <% products.forEach(product => { %>
-            <article class="product-card">
+            <article class="product-card" data-product-id="<%= product._id %>" data-category-id="<%= product.category?._id || '' %>">
               <div class="product-media prd-img">
                 <% if (product.image) { %>
                   <img src="<%= product.image.startsWith('/') ? product.image : ('/images/' + product.image) %>" alt="<%= product.name %>">
@@ -31,8 +51,20 @@
               <div class="product-body">
                 <h3 class="product-title"><%= product.name %></h3>
                 <p class="prd-desc"><%= (product.description || '').length > 200 ? (product.description.slice(0,200) + '...') : product.description %></p>
+                <% if (typeof product.avgRating !== 'undefined') { %>
+                  <div class="prod-rating" style="color:#f39c12;font-weight:600;margin-top:.35rem;"> <%= (product.avgRating ? product.avgRating.toFixed(1) : '0.0') %> ★</div>
+                <% } %>
                 <div class="product-price">
-                  <span class="new-price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></span>
+                  <% const displayPrice = Math.round(Number(product.price));
+                     const discount = Number(product.discount || 0);
+                     const hasDiscount = discount > 0;
+                  %>
+                  <% if (hasDiscount) { %>
+                    <div class="old-price"><%= displayPrice %> <%= currencySymbol %></div>
+                    <div class="new-price"><%= Math.round(displayPrice * (1 - discount/100)) %> <%= currencySymbol %></div>
+                  <% } else { %>
+                    <div class="new-price"><%= displayPrice %> <%= currencySymbol %></div>
+                  <% } %>
                 </div>
                 <div class="product-cta">
                   <button class="btn btn-sm btn-primary" onclick="addToCart('<%= product._id %>',1)">أضف إلى السلة</button>
@@ -42,7 +74,13 @@
             </article>
           <% }) %>
         <% } else { %>
-          <div style="text-align:center;padding:3rem;color:#666;">لا توجد منتجات حاليا</div>
+          <% if (typeof selectedCategoryId !== 'undefined' && selectedCategoryId && selectedCategoryId !== 'all') { %>
+            <div style="text-align:center;padding:3rem;color:#666;">
+              لا توجد نتائج في هذا القسم حاليًا. يمكنك تجربة فئة أخرى أو الضغط على "مسح الفلتر" لعرض جميع المنتجات.
+            </div>
+          <% } else { %>
+            <div style="text-align:center;padding:3rem;color:#666;">لا توجد منتجات حاليا</div>
+          <% } %>
         <% } %>
       </div>
 
@@ -50,6 +88,8 @@
   </section>
 
   <%- include("partials/footer") %>
+
+  <div id="initial-data" style="display:none;" data-selected-id="<%= typeof selectedCategoryId !== 'undefined' ? selectedCategoryId : 'all' %>" data-selected-desc="<%= typeof selectedCategoryDesc !== 'undefined' ? selectedCategoryDesc : '' %>"></div>
 
   <script>
     function addToCart(productId, quantity) {
@@ -61,6 +101,92 @@
         if (data.success) alert('تمت إضافة المنتج إلى السلة');
       }).catch(e => console.error(e));
     }
+  </script>
+
+  <script>
+    // Simple show/hide with CSS transition support for product cards
+    function hideItem(item) {
+      if (!item) return;
+      if (item.style.display === 'none') return;
+      item.classList.add('filter-hidden');
+      const onEnd = (e) => {
+        if (e.target !== item) return;
+        item.style.display = 'none';
+        item.removeEventListener('transitionend', onEnd);
+      };
+      item.addEventListener('transitionend', onEnd);
+    }
+
+    function showItem(item) {
+      if (!item) return;
+      item.style.display = '';
+      requestAnimationFrame(() => item.classList.remove('filter-hidden'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const sel = document.getElementById('categorySelectIndex');
+      const clearBtn = document.getElementById('clearFilterBtnIndex');
+      const catDescEl = document.querySelector('.category-description');
+
+      function applyFilter(category) {
+        const all = !category || category === 'all';
+        document.querySelectorAll('.product-card').forEach(card => {
+          const rowCat = card.dataset.categoryId || '';
+          if (all) { showItem(card); }
+          else { if (rowCat && rowCat === category) showItem(card); else hideItem(card); }
+        });
+      }
+
+      if (sel) {
+        // Navigate to server-side filtered view so results are persistent and bookmarkable
+        sel.addEventListener('change', () => {
+          const category = sel.value;
+          // if 'all' selected, go to root without query
+          if (!category || category === 'all') {
+            window.location.href = '/';
+            return;
+          }
+          // otherwise navigate with query param so server will load filtered products
+          const url = new URL(window.location.href);
+          url.searchParams.set('category', category);
+          // navigate to the same path (home) with category param
+          window.location.href = url.pathname + '?' + url.searchParams.toString();
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          // remove category query and reload
+          const url = new URL(window.location.href);
+          url.searchParams.delete('category');
+          window.location.href = url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams.toString()) : '');
+        });
+      }
+
+      // Initialize from server-provided data if present without triggering a change event
+      // (this prevents a navigation when the page is already loaded with ?category=...)
+      try {
+        const initEl = document.getElementById('initial-data');
+        const selectedId = initEl ? (initEl.dataset.selectedId || 'all') : 'all';
+        const desc = initEl ? (initEl.dataset.selectedDesc || '') : '';
+        if (selectedId && selectedId !== 'all') {
+          if (sel) {
+            // set the select value but do NOT dispatch a change (avoid navigation)
+            sel.value = selectedId;
+            // update description and clear button to reflect server-side filter
+            const opt = sel.options[sel.selectedIndex];
+            if (catDescEl) catDescEl.textContent = (opt ? (opt.dataset.desc || desc) : desc);
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+          } else {
+            if (catDescEl) catDescEl.textContent = desc;
+            applyFilter(selectedId);
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+          }
+        } else {
+          if (sel) sel.value = 'all';
+        }
+      } catch (e) { console.error('Init index category filter error', e); }
+    });
   </script>
 </body>
 </html>

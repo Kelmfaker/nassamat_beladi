@@ -9,7 +9,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:admin": "node scripts/make-admin.js",
-    "generate:images": "node scripts/generate-image-variants.js"
+    "generate:images": "node scripts/generate-image-variants.js",
+    "migrate:categories": "node scripts/migrate-fill-category-descriptions.js"
   },
   "keywords": [],
   "author": "",

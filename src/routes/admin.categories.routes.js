@@ -12,16 +12,25 @@ router.get('/', protect, isAdmin, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.post('/', protect, isAdmin, [body('name').trim().notEmpty()], async (req, res, next) => {
+router.post('/', protect, isAdmin, [
+  body('name').trim().notEmpty(),
+  body('description').optional().trim().escape()
+], async (req, res, next) => {
   try {
-    await Category.create({ name: req.body.name });
+    await Category.create({ name: req.body.name, description: req.body.description || '' });
     res.redirect('/admin/categories');
   } catch (e) { next(e); }
 });
 
-router.post('/:id', protect, isAdmin, [param('id').isMongoId(), body('name').trim().notEmpty()], async (req, res, next) => {
+router.post('/:id', protect, isAdmin, [
+  param('id').isMongoId(),
+  body('name').trim().notEmpty(),
+  body('description').optional().trim().escape()
+], async (req, res, next) => {
   try {
-    await Category.findByIdAndUpdate(req.params.id, { name: req.body.name });
+    const id = req.params.id || req.body.id;
+    if (!id) return res.status(400).send('Missing category id');
+    await Category.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description || '' });
     res.redirect('/admin/categories');
   } catch (e) { next(e); }
 });

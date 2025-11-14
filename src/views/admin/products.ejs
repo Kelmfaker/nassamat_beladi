@@ -24,7 +24,7 @@
             </div>
             <div class="form-group">
               <label for="price">السعر (<%= currencySymbol %>) *</label>
-              <input type="number" id="price" name="price" step="0.01" min="0" required>
+              <input type="number" id="price" name="price" step="1" min="0" required>
             </div>
           </div>
 
@@ -84,7 +84,18 @@
                     <h3><%= product.name %></h3>
                     <p class="category-badge"><%= product.category?.name || 'بدون قسم' %></p>
                     <p class="description"><%= product.description || '-' %></p>
-                    <p class="price"><%= product.price %> <%= currencySymbol %></p>
+                    <p class="price">
+                      <% const displayPrice = Math.round(Number(product.price));
+                         const discount = Number(product.discount || 0);
+                         const hasDiscount = discount > 0;
+                      %>
+                      <% if (hasDiscount) { %>
+                        <div class="old-price"><%= displayPrice %> <%= currencySymbol %></div>
+                        <div class="new-price"><%= Math.round(displayPrice * (1 - discount/100)) %> <%= currencySymbol %></div>
+                      <% } else { %>
+                        <div class="new-price"><%= displayPrice %> <%= currencySymbol %></div>
+                      <% } %>
+                    </p>
                     <p class="stock">المخزون: <%= product.stock || 0 %></p>
                   <div class="actions">
                     <button onclick="editProduct('<%= product._id %>')" class="btn btn-edit">تعديل</button>
@@ -116,7 +127,7 @@
           </div>
           <div class="form-group">
             <label for="edit-price">السعر (<%= currencySymbol %>) *</label>
-            <input type="number" id="edit-price" name="price" step="0.01" min="0" required>
+            <input type="number" id="edit-price" name="price" step="1" min="0" required>
           </div>
         </div>
 

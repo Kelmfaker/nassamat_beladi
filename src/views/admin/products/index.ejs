@@ -24,7 +24,7 @@
             </div>
             <div class="form-group">
               <label for="price">السعر (<%= currencySymbol %>) *</label>
-              <input type="number" id="price" name="price" step="0.01" min="0" required>
+              <input type="number" id="price" name="price" step="1" min="0" required>
             </div>
           </div>
 
@@ -82,7 +82,7 @@
             data-price="<%= product.price %>"
             data-category-id="<%= product.category?._id || '' %>"
             data-image="<%= product.image || '' %>"
-            data-stock="<%= product.stock || 0 %>">
+            data-stock="<%= Math.trunc(Number(product.stock || 0)) %>">
                     <td class="td-img">
                       <% if (product.image) { const imgSrc = product.image.startsWith('/') ? product.image : ('/images/products' + product.image); %>
                         <img src="<%= imgSrc %>" alt="<%= product.name %>" width="72" height="72" style="object-fit:cover;border-radius:6px;" />
@@ -92,8 +92,19 @@
                     </td>
                     <td class="td-name"><%= product.name %></td>
                     <td class="td-cat"><%= product.category?.name || 'بدون قسم' %></td>
-                    <td class="td-price"><%= Number(product.price).toFixed(2) %> <%= currencySymbol %></td>
-                    <td class="td-stock"><%= product.stock || 0 %></td>
+                    <td class="td-price">
+                      <% const displayPrice = Number(product.price);
+                         const discount = Number(product.discount || 0);
+                         const hasDiscount = discount > 0;
+                      %>
+                      <% if (hasDiscount) { %>
+                        <div class="old-price"><%= displayPrice %> <%= currencySymbol %></div>
+                        <div class="new-price"><%= Math.round(displayPrice * (1 - discount/100)) %> <%= currencySymbol %></div>
+                      <% } else { %>
+                        <div class="new-price"><%= displayPrice %> <%= currencySymbol %></div>
+                      <% } %>
+                    </td>
+                    <td class="td-stock"><%= Math.trunc(Number(product.stock || 0)) %></td>
                     <td class="td-actions">
                       <button type="button" class="btn btn-edit" onclick="editProduct('<%= product._id %>')">تعديل</button>
                       <form action="/admin/products/<%= product._id %>/delete" method="POST" style="display:inline;margin-left:.5rem;" onsubmit="return confirm('هل أنت متأكد من حذف هذا المنتج؟')">
@@ -125,7 +136,7 @@
           </div>
           <div class="form-group">
             <label for="edit-price">السعر (<%= currencySymbol %>) *</label>
-            <input type="number" id="edit-price" name="price" step="0.01" min="0" required>
+            <input type="number" id="edit-price" name="price" step="1" min="0" required>
           </div>
         </div>
 
@@ -329,6 +340,125 @@
         });
       }
     });
+  </script>
+  <script>
+    // Inline stock editing: click a .td-stock cell to edit and save via AJAX
+    (function () {
+      let activeEditor = null; // { td, originalText }
+
+      function closeEditor(save) {
+        if (!activeEditor) return;
+        const { td, originalText, tr } = activeEditor;
+        const input = td.querySelector('input.inline-stock-input');
+        const controls = td.querySelector('.inline-stock-controls');
+
+        if (!save) {
+          td.textContent = originalText;
+          td.classList.remove('editing');
+          activeEditor = null;
+          return;
+        }
+
+        // Save: send to server
+        const newValRaw = input.value;
+        const newVal = Math.trunc(Number(newValRaw || 0));
+        const id = tr.dataset.productId;
+        if (!id) {
+          alert('Unable to determine product id');
+          closeEditor(false);
+          return;
+        }
+
+        // disable controls while saving
+        input.disabled = true;
+        if (controls) Array.from(controls.querySelectorAll('button')).forEach(b => b.disabled = true);
+
+        const fd = new FormData();
+        fd.append('stock', String(newVal));
+
+        fetch('/admin/products/' + id, {
+          method: 'POST',
+          credentials: 'same-origin',
+          body: fd,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(res => {
+          if (!res.ok) throw new Error('Server error');
+          return res.json().catch(() => ({}));
+        }).then(json => {
+          // optimistic: update cell and row dataset
+          td.textContent = String(newVal);
+          tr.dataset.stock = String(newVal);
+        }).catch(err => {
+          console.error(err);
+          alert('فشل تحديث المخزون');
+          td.textContent = originalText;
+        }).finally(() => {
+          td.classList.remove('editing');
+          activeEditor = null;
+        });
+      }
+
+      document.addEventListener('click', function (e) {
+        // if click outside active editor, cancel it
+        if (activeEditor) {
+          const td = activeEditor.td;
+          if (!td.contains(e.target)) closeEditor(false);
+        }
+
+        const td = e.target.closest && e.target.closest('.td-stock');
+        if (!td) return;
+        // ignore if already editing
+        if (td.classList.contains('editing')) return;
+
+        const tr = td.closest('tr');
+        if (!tr) return;
+        const productId = tr.dataset.productId;
+        if (!productId) return;
+
+        const originalText = (td.textContent || '').trim();
+        const initialVal = String(Math.trunc(Number(originalText || tr.dataset.stock || 0)));
+
+        // build editor
+        td.classList.add('editing');
+        td.innerHTML = '';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.className = 'inline-stock-input';
+        input.value = initialVal;
+        input.style.width = '6rem';
+
+        const controls = document.createElement('span');
+        controls.className = 'inline-stock-controls';
+        controls.style.marginLeft = '.5rem';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn btn-primary btn-inline-save';
+        saveBtn.textContent = 'حفظ';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-light btn-inline-cancel';
+        cancelBtn.textContent = 'إلغاء';
+
+        controls.appendChild(saveBtn);
+        controls.appendChild(cancelBtn);
+        td.appendChild(input);
+        td.appendChild(controls);
+        input.focus();
+
+        activeEditor = { td, originalText, tr };
+
+        saveBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeEditor(true); });
+        cancelBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeEditor(false); });
+
+        input.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') { ev.preventDefault(); closeEditor(true); }
+          if (ev.key === 'Escape') { ev.preventDefault(); closeEditor(false); }
+        });
+      });
+    })();
   </script>
 </body>
 </html>
