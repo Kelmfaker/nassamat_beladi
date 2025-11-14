@@ -47,6 +47,23 @@
         var hdr = document.querySelector('header');
         var content = document.querySelector('.content') || document.getElementById('content') || document.querySelector('main');
         if (!hdr || !content) return;
+
+  // Pages where we want content to scroll *under* the header (no extra padding)
+  // Keep only the public user orders page as overlay; admin dashboard/orders will now
+  // receive the same top-padding as other pages so their layout matches the site.
+  var noPaddingPaths = [ '/orders' ];
+        var path = window.location.pathname || '';
+        // allow prefix matches for nested admin routes like /admin/orders/123
+        var keepUnderHeader = noPaddingPaths.some(function(p) {
+          return path === p || (p.endsWith('/') ? path.indexOf(p) === 0 : path.indexOf(p) === 0);
+        });
+
+        if (keepUnderHeader) {
+          // remove any forced padding so the header overlays the content
+          content.style.paddingTop = '';
+          return;
+        }
+
         var h = hdr.offsetHeight || 0;
         // basePadding should match .content's existing padding-top (30px)
         var basePadding = 30;

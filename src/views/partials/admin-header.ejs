@@ -84,3 +84,93 @@ document.addEventListener('DOMContentLoaded', function () {
   window.addEventListener('scroll', closeMenu, { passive: true });
 });
 </script>
+<script>
+  // Ensure page content is pushed below the sticky admin header to avoid overlap
+  (function(){
+    function adjustContent() {
+      try {
+        var hdr = document.querySelector('header');
+        var content = document.querySelector('.content') || document.getElementById('content') || document.querySelector('main');
+        if (!hdr || !content) return;
+
+  // Pages where we want content to scroll *under* the header (no extra padding)
+  // Only keep the public user orders page as overlay; admin pages should match site padding.
+  var noPaddingPaths = [ '/orders' ];
+        var path = window.location.pathname || '';
+        var keepUnderHeader = noPaddingPaths.some(function(p) {
+          return path === p || (p.endsWith('/') ? path.indexOf(p) === 0 : path.indexOf(p) === 0);
+        });
+
+        if (keepUnderHeader) {
+          content.style.paddingTop = '';
+          return;
+        }
+
+        var h = hdr.offsetHeight || 0;
+        var basePadding = 30;
+        var computed = window.getComputedStyle(content).paddingTop || '';
+        var current = parseInt(computed, 10) || 0;
+        var desired = h + basePadding;
+        if (current < desired) content.style.paddingTop = desired + 'px';
+      } catch (err) {
+        // silent
+      }
+    }
+    window.addEventListener('load', adjustContent);
+    window.addEventListener('resize', adjustContent);
+    document.addEventListener('DOMContentLoaded', adjustContent);
+  })();
+</script>
+
+<script>
+  // Enhance stock inputs with quick increment/decrement buttons (±10, ±100)
+  (function(){
+    function makeButtons() {
+      try {
+        const inputs = document.querySelectorAll('input[type="number"][name="stock"]');
+        if (!inputs || inputs.length === 0) return;
+
+        inputs.forEach(inp => {
+          if (inp.dataset.stockEnhanced) return;
+          inp.dataset.stockEnhanced = '1';
+
+          const wrap = document.createElement('div');
+          wrap.style.display = 'flex';
+          wrap.style.gap = '6px';
+          wrap.style.alignItems = 'center';
+          wrap.style.marginTop = '6px';
+
+          const steps = [ -100, -10, 10, 100 ];
+          steps.forEach(step => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = (step>0?'+':'') + String(step);
+            btn.style.padding = '4px 6px';
+            btn.style.fontSize = '12px';
+            btn.style.borderRadius = '6px';
+            btn.style.border = '1px solid #ddd';
+            btn.style.background = '#fff';
+            btn.style.cursor = 'pointer';
+            btn.addEventListener('click', function(e){
+              e.preventDefault();
+              const cur = Number(inp.value) || 0;
+              const next = Math.max(0, cur + step);
+              inp.value = next;
+              inp.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            wrap.appendChild(btn);
+          });
+
+          inp.parentNode.insertBefore(wrap, inp.nextSibling);
+        });
+      } catch (err) {
+        console.error('stock enhancer error', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', makeButtons);
+    window.addEventListener('load', makeButtons);
+    const obs = new MutationObserver((mutations) => { makeButtons(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+  })();
+</script>
